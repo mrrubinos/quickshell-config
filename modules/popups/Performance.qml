@@ -1,194 +1,158 @@
 import qs.services
 import qs.ds
 import qs.ds.text as Text
+import qs.ds.progress
+import qs.ds.icons
 import QtQuick
 import QtQuick.Layouts
 import qs.ds.animations
 
-RowLayout {
+ColumnLayout {
     id: root
 
-    readonly property int padding: Foundations.spacing.l
+    readonly property int padding: Foundations.spacing.m
 
     function displayTemp(temp: real): string {
         return `${Math.ceil(temp)}°C`;
     }
 
-    spacing: padding * 3
-
-    Resource {
-        Layout.alignment: Qt.AlignVCenter
-        Layout.bottomMargin: root.padding
-        Layout.leftMargin: root.padding * 2
-        Layout.topMargin: root.padding
-        label1: root.displayTemp(SystemUsage.gpuTemp)
-        label2: `${Math.round(SystemUsage.gpuPerc * 100)}%`
-        sublabel1: qsTr("GPU temp")
-        sublabel2: qsTr("Usage")
-        value1: Math.min(1, SystemUsage.gpuTemp / 90)
-        value2: SystemUsage.gpuPerc
-    }
-    Resource {
-        Layout.alignment: Qt.AlignVCenter
-        Layout.bottomMargin: root.padding
-        Layout.topMargin: root.padding
-        label1: root.displayTemp(SystemUsage.cpuTemp)
-        label2: `${Math.round(SystemUsage.cpuPerc * 100)}%`
-        primary: true
-        sublabel1: qsTr("CPU temp")
-        sublabel2: qsTr("Usage")
-        value1: Math.min(1, SystemUsage.cpuTemp / 90)
-        value2: SystemUsage.cpuPerc
-    }
-    Resource {
-        Layout.alignment: Qt.AlignVCenter
-        Layout.bottomMargin: root.padding
-        Layout.rightMargin: root.padding * 3
-        Layout.topMargin: root.padding
-        label1: {
-            const fmt = SystemUsage.formatKib(SystemUsage.memUsed);
-            return `${+fmt.value.toFixed(1)}${fmt.unit}`;
-        }
-        label2: {
-            const fmt = SystemUsage.formatKib(SystemUsage.storageUsed);
-            return `${Math.floor(fmt.value)}${fmt.unit}`;
-        }
-        sublabel1: qsTr("Memory")
-        sublabel2: qsTr("Storage")
-        value1: SystemUsage.memPerc
-        value2: SystemUsage.storagePerc
+    function formatBytes(kib: real): string {
+        const fmt = SystemUsage.formatKib(kib);
+        return `${+fmt.value.toFixed(1)}${fmt.unit}`;
     }
 
-    component Resource: Item {
-        id: res
+    spacing: padding
+    width: 400
 
-        property color bg1: Foundations.palette.base00
-        property color bg2: Foundations.palette.base04
-        property color fg1: Foundations.palette.base05
-        property color fg2: Foundations.palette.base0D
-        required property string label1
-        required property string label2
-        property bool primary
-        readonly property real primaryMult: primary ? 1.2 : 1
-        required property string sublabel1
-        required property string sublabel2
-        readonly property real thickness: 10 * primaryMult
-        required property real value1
-        required property real value2
+    RowLayout {
+        Layout.fillWidth: true
+        Layout.leftMargin: padding
+        Layout.rightMargin: padding
+        Layout.topMargin: padding / 2
 
-        implicitHeight: 200 * primaryMult
-        implicitWidth: 200 * primaryMult
+        Text.HeadingS {
+            Layout.fillWidth: true
+            text: qsTr("System Performance")
+        }
+    }
 
-        Behavior on bg1 {
-            BasicColorAnimation {
+    // CPU Section
+    ResourceBar {
+        Layout.fillWidth: true
+        Layout.leftMargin: padding
+        Layout.rightMargin: padding
+
+        icon: "speed"
+        title: "CPU"
+        resourceValue: SystemUsage.cpuPerc || 0
+        label: `${Math.round((SystemUsage.cpuPerc || 0) * 100)}%`
+        sublabel: root.displayTemp(SystemUsage.cpuTemp || 0)
+        barColor: Foundations.palette.base05
+    }
+
+    // GPU Section (if available)
+    ResourceBar {
+        Layout.fillWidth: true
+        Layout.leftMargin: padding
+        Layout.rightMargin: padding
+        visible: SystemUsage.gpuType !== "NONE"
+
+        icon: "memory"
+        title: "GPU"
+        resourceValue: SystemUsage.gpuPerc || 0
+        label: `${Math.round((SystemUsage.gpuPerc || 0) * 100)}%`
+        sublabel: root.displayTemp(SystemUsage.gpuTemp || 0)
+        barColor: Foundations.palette.base05
+    }
+
+    // Memory Section
+    ResourceBar {
+        Layout.fillWidth: true
+        Layout.leftMargin: padding
+        Layout.rightMargin: padding
+
+        icon: "memory_alt"
+        title: "Memory"
+        resourceValue: SystemUsage.memPerc || 0
+        label: `${root.formatBytes(SystemUsage.memUsed || 0)} / ${root.formatBytes(SystemUsage.memTotal || 0)}`
+        sublabel: `${Math.round((SystemUsage.memPerc || 0) * 100)}% used`
+        barColor: Foundations.palette.base05
+    }
+
+    // Storage Section
+    ResourceBar {
+        Layout.fillWidth: true
+        Layout.leftMargin: padding
+        Layout.rightMargin: padding
+        Layout.bottomMargin: padding
+
+        icon: "storage"
+        title: "Storage"
+        resourceValue: SystemUsage.storagePerc || 0
+        label: `${root.formatBytes(SystemUsage.storageUsed || 0)} / ${root.formatBytes(SystemUsage.storageTotal || 0)}`
+        sublabel: `${root.formatBytes((SystemUsage.storageTotal || 0) - (SystemUsage.storageUsed || 0))} free`
+        barColor: Foundations.palette.base05
+    }
+
+    component ResourceBar: ColumnLayout {
+        property color barColor: Foundations.palette.base05
+        property string icon: ""
+        property string label: ""
+        property string sublabel: ""
+        property string title: ""
+        property real resourceValue: 0.0
+
+        spacing: Foundations.spacing.xs
+
+        // Title row with icon and labels
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Foundations.spacing.m
+
+            // Icon
+            MaterialFontIcon {
+                color: barColor
+                font.pointSize: Foundations.font.size.m
+                text: icon
+            }
+
+            // Title and values
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 2
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text.BodyM {
+                        text: title
+                        color: Foundations.palette.base05
+                    }
+
+                    Item { Layout.fillWidth: true }
+
+                    Text.BodyS {
+                        text: label
+                        color: barColor
+                        font.family: Foundations.font.family.mono
+                    }
+                }
+
+                Text.BodyS {
+                    text: sublabel
+                    color: Foundations.palette.base04
+                }
             }
         }
-        Behavior on bg2 {
-            BasicColorAnimation {
-            }
-        }
-        Behavior on fg1 {
-            BasicColorAnimation {
-            }
-        }
-        Behavior on fg2 {
-            BasicColorAnimation {
-            }
-        }
-        Behavior on value1 {
-            BasicNumberAnimation {
-            }
-        }
-        Behavior on value2 {
-            BasicNumberAnimation {
-            }
-        }
 
-        onBg1Changed: canvas.requestPaint()
-        onBg2Changed: canvas.requestPaint()
-        onFg1Changed: canvas.requestPaint()
-        onFg2Changed: canvas.requestPaint()
-        onValue1Changed: canvas.requestPaint()
-        onValue2Changed: canvas.requestPaint()
+        // Progress bar
+        LinearProgress {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Foundations.spacing.xs
 
-        Column {
-            anchors.centerIn: parent
-
-            Text.HeadingL {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: res.label1
-            }
-            Text.HeadingS {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: res.sublabel1
-            }
-        }
-        Column {
-            anchors.horizontalCenter: parent.right
-            anchors.horizontalCenterOffset: -res.thickness / 2
-            anchors.top: parent.verticalCenter
-            anchors.topMargin: res.thickness / 2 + Foundations.spacing.s
-
-            Text.HeadingS {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: res.label2
-            }
-            Text.BodyS {
-                anchors.horizontalCenter: parent.horizontalCenter
-                text: res.sublabel2
-            }
-        }
-        Canvas {
-            id: canvas
-
-            readonly property real arc1End: degToRad(220)
-            readonly property real arc1Start: degToRad(45)
-            readonly property real arc2End: degToRad(360)
-            readonly property real arc2Start: degToRad(230)
-            readonly property real centerX: width / 2
-            readonly property real centerY: height / 2
-
-            function degToRad(deg: int): real {
-                return deg * Math.PI / 180;
-            }
-
-            anchors.fill: parent
-
-            onPaint: {
-                const ctx = getContext("2d");
-                ctx.reset();
-
-                ctx.lineWidth = res.thickness;
-                ctx.lineCap = "round";
-
-                const radius = (Math.min(width, height) - ctx.lineWidth) / 2;
-                const cx = centerX;
-                const cy = centerY;
-                const a1s = arc1Start;
-                const a1e = arc1End;
-                const a2s = arc2Start;
-                const a2e = arc2End;
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, a1s, a1e, false);
-                ctx.strokeStyle = res.bg1;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, a1s, (a1e - a1s) * res.value1 + a1s, false);
-                ctx.strokeStyle = res.fg1;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, a2s, a2e, false);
-                ctx.strokeStyle = res.bg2;
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.arc(cx, cy, radius, a2s, (a2e - a2s) * res.value2 + a2s, false);
-                ctx.strokeStyle = res.fg2;
-                ctx.stroke();
-            }
+            fgColour: barColor
+            bgColour: Foundations.palette.base03
+            value: resourceValue
         }
     }
 }

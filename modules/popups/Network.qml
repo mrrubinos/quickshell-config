@@ -6,6 +6,7 @@ import qs.services as Services
 import qs.ds.buttons as Buttons
 import qs.ds.list as Lists
 import qs.ds.text as Text
+import qs.ds.icons as Icons
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -24,11 +25,66 @@ ColumnLayout {
     Text.HeadingS {
         Layout.rightMargin: root.margin
         Layout.topMargin: root.margin
-        text: qsTr("Wifi %1").arg(Network.wifiEnabled ? "enabled" : "disabled")
+        text: qsTr("Network")
+    }
+
+    // Connection details section (shown when there are active connections)
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: detailsLayout.implicitHeight + Foundations.spacing.m * 2
+        Layout.rightMargin: root.margin
+        Layout.bottomMargin: root.margin
+
+        color: Foundations.palette.base01
+        radius: Foundations.radius.s
+        border.color: Foundations.palette.base03
+        border.width: 1
+        visible: Network.ethernetIp !== "" || Network.wifiIp !== ""
+
+        ColumnLayout {
+            id: detailsLayout
+
+            anchors.fill: parent
+            anchors.margins: Foundations.spacing.m
+            spacing: Foundations.spacing.s
+
+            Text.BodyS {
+                color: Foundations.palette.base04
+                text: qsTr("Connection Details")
+                font.weight: Font.Medium
+            }
+
+            // Ethernet IP
+            DetailRow {
+                icon: "lan"
+                label: qsTr("Ethernet IP")
+                value: Network.ethernetIp
+                visible: Network.ethernetIp !== ""
+            }
+
+            // WiFi IP
+            DetailRow {
+                icon: "wifi"
+                label: qsTr("WiFi IP")
+                value: Network.wifiIp
+                visible: Network.wifiIp !== ""
+            }
+        }
+    }
+
+    // No active connections message
+    Text.BodyS {
+        Layout.fillWidth: true
+        Layout.rightMargin: root.margin
+        text: qsTr("No active network connections")
+        color: Foundations.palette.base03
+        horizontalAlignment: Text.AlignHCenter
+        visible: Network.ethernetIp === "" && Network.wifiIp === ""
     }
     Toggle {
+        Layout.topMargin: root.margin
         checked: Network.wifiEnabled
-        label: qsTr("Enabled")
+        label: qsTr("WiFi enabled")
 
         toggle.onToggled: Network.enableWifi(checked)
     }
@@ -107,6 +163,37 @@ ColumnLayout {
         }
         Switch {
             id: toggle
+        }
+    }
+
+    // Component for detail rows
+    component DetailRow: RowLayout {
+        required property string icon
+        required property string label
+        required property string value
+
+        Layout.fillWidth: true
+        spacing: Foundations.spacing.s
+
+        Icons.MaterialFontIcon {
+            color: Foundations.palette.base04
+            font.pointSize: Foundations.font.size.s
+            text: parent.icon
+        }
+
+        Text.BodyS {
+            color: Foundations.palette.base04
+            text: parent.label + ":"
+        }
+
+        Item {
+            Layout.fillWidth: true
+        }
+
+        Text.BodyS {
+            color: Foundations.palette.base05
+            font.family: Foundations.font.family.mono
+            text: parent.value
         }
     }
 }

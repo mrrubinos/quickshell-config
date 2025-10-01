@@ -90,8 +90,7 @@ Item {
                 "handle": menuHandle,
                 "level": menu.level + 1,
                 "shown": true,
-                "x": menu.x + menu.width - 10 // Slight overlap
-                ,
+                "x": menu.x + menu.width - 10,
                 "y": Math.max(0, Math.min(menu.y + itemY, root.height - 200)) // Ensure it fits
             });
         }

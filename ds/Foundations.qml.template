@@ -75,5 +75,6 @@ Singleton {
         property int xl: 20
         property int xs: 7
         property int xxs: 5
+        property int xxxs: 2
     }
 }

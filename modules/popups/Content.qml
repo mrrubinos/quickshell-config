@@ -32,6 +32,11 @@ Item {
             }
         }
         Popout {
+            name: "vpn"
+            sourceComponent: VPN {
+            }
+        }
+        Popout {
             name: "bluetooth"
 
             sourceComponent: Bluetooth {

@@ -14,7 +14,7 @@ Rectangle {
 
     property color colour: Foundations.palette.base0D
 
-    // ToDo: Reviow (maybe review all margin/paddings)
+    // ToDo: Review (maybe review all margin/paddings)
     property int margin: Foundations.spacing.s
     property int spacingItems: Foundations.spacing.m
 
@@ -45,23 +45,36 @@ Rectangle {
 
         // CPU usage
         ResourceItem {
-            colour: Foundations.palette.base0D
-            icon: "memory"
+            colour: SystemUsage.cpuPerc > 0.8 ? Foundations.palette.base09 : Foundations.palette.base0D
+            icon: "speed"
             value: SystemUsage.cpuPerc
         }
 
         // Memory usage
         ResourceItem {
-            colour: Foundations.palette.base0D
-            icon: "memory_alt"
+            colour: SystemUsage.memPerc > 0.8 ? Foundations.palette.base09 : Foundations.palette.base0D
+            icon: "memory"
             value: SystemUsage.memPerc
         }
 
-        // Storage usage
+        // Disk storage - showing usage percentage
         ResourceItem {
-            colour: Foundations.palette.base0D
-            icon: "hard_disk"
+            colour: SystemUsage.storagePerc > 0.8 ? Foundations.palette.base08 : Foundations.palette.base0D
+            icon: "storage"
             value: SystemUsage.storagePerc
+        }
+
+        // CPU temperature
+        ResourceItem {
+            colour: {
+                const temp = SystemUsage.cpuTemp;
+                if (temp > 80) return Foundations.palette.base08;
+                if (temp > 65) return Foundations.palette.base09;
+                return Foundations.palette.base0D;
+            }
+            icon: "thermostat"
+            value: SystemUsage.cpuTemp
+            isPercent: false
         }
     }
 
@@ -69,23 +82,23 @@ Rectangle {
         required property color colour
         required property string icon
         required property real value
+        property bool isPercent: true
 
-        spacing: 2
+        spacing: Foundations.spacing.xxxs
 
         Behavior on value {
-            BasicNumberAnimation {
-                duration: Foundations.duration.slow
-            }
+            BasicNumberAnimation { }
         }
 
-        Text.BodyS {
-            color: parent.colour
-            text: Math.round(parent.value * 100) + "%"
-        }
         Icons.MaterialFontIcon {
             color: parent.colour
             font.pointSize: Foundations.font.size.xs
             text: parent.icon
+        }
+
+        Text.BodyS {
+            color: parent.colour
+            text: isPercent ? Math.round(parent.value * 100) + "%" : Math.round(parent.value) + "°C"
         }
     }
 }

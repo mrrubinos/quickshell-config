@@ -96,7 +96,67 @@ Rectangle {
             sourceComponent: Icons.MaterialFontIcon {
                 animate: true
                 color: root.colour
-                text: Network.active ? Services.IconsService.getNetworkIcon(Network.active.strength ?? 0) : "wifi_off"
+                text: {
+                    if (Network.hasEthernetConnection)
+                        return "lan";
+                    if (Network.active)
+                        return Services.IconsService.getNetworkIcon(Network.active.strength ?? 0);
+                    return "wifi_off";
+                }
+            }
+        }
+
+        // VPN icon
+        WrappedLoader {
+            name: "vpn"
+
+            sourceComponent: Item {
+                implicitWidth: vpnIcon.implicitWidth
+                implicitHeight: vpnIcon.implicitHeight
+
+                Icons.MaterialFontIcon {
+                    id: vpnIcon
+                    animate: true
+                    color: {
+                        if (!VPN.available) return Foundations.palette.base08;
+                        if (VPN.connecting) return Foundations.palette.base0A;
+                        if (VPN.connected) return Foundations.palette.base0B;
+                        return root.colour;
+                    }
+                    text: VPN.statusIcon
+
+                    Behavior on color {
+                        BasicColorAnimation { }
+                    }
+                }
+
+                // Subtle pulsing animation for connecting state
+                SequentialAnimation on opacity {
+                    running: VPN.connecting
+                    loops: Animation.Infinite
+                    BasicNumberAnimation { from: 1.0; to: 0.4; duration: Foundations.duration.slow }
+                    BasicNumberAnimation { from: 0.4; to: 1.0; duration: Foundations.duration.slow }
+                }
+
+                // Small progress dot indicator
+                Rectangle {
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.rightMargin: -2
+                    anchors.topMargin: -2
+                    width: 6
+                    height: 6
+                    radius: 3
+                    color: Foundations.palette.base0D
+                    visible: VPN.connecting
+
+                    SequentialAnimation on scale {
+                        running: VPN.connecting
+                        loops: Animation.Infinite
+                        BasicNumberAnimation { from: 1.0; to: 1.4; duration: Foundations.duration.standard }
+                        BasicNumberAnimation { from: 1.4; to: 1.0; duration: Foundations.duration.standard }
+                    }
+                }
             }
         }
 

@@ -12,6 +12,13 @@ Singleton {
     readonly property bool scanning: rescanProc.running
     property bool wifiEnabled: true
 
+    // Network interface information
+    readonly property list<NetworkInterface> interfaces: []
+    readonly property string wifiIp: getInterfaceIp("wifi")
+    readonly property string ethernetIp: getInterfaceIp("ethernet")
+    readonly property bool hasWifiConnection: wifiIp !== ""
+    readonly property bool hasEthernetConnection: ethernetIp !== ""
+
     function connectToNetwork(ssid: string, password: string): void {
         connectProc.exec(["nmcli", "conn", "up", ssid]);
     }
@@ -34,6 +41,13 @@ Singleton {
         const cmd = wifiEnabled ? "off" : "on";
         enableWifiProc.exec(["nmcli", "radio", "wifi", cmd]);
     }
+    function getInterfaceIp(type: string): string {
+        const iface = interfaces.find(i => i.type === type && i.state === "connected");
+        return iface ? iface.ip : "";
+    }
+    function refreshInterfaces(): void {
+        getInterfacesProc.running = true;
+    }
 
     reloadableId: "network"
 
@@ -42,7 +56,10 @@ Singleton {
         running: true
 
         stdout: SplitParser {
-            onRead: getNetworks.running = true
+            onRead: {
+                getNetworks.running = true;
+                getInterfacesProc.running = true;
+            }
         }
     }
     Process {
@@ -67,6 +84,7 @@ Singleton {
         onExited: {
             root.getWifiStatus();
             getNetworks.running = true;
+            getInterfacesProc.running = true;
         }
     }
     Process {
@@ -76,6 +94,7 @@ Singleton {
 
         onExited: {
             getNetworks.running = true;
+            getInterfacesProc.running = true;
         }
     }
     Process {
@@ -85,14 +104,20 @@ Singleton {
             onStreamFinished: console.warn("Network connection error:", text)
         }
         stdout: SplitParser {
-            onRead: getNetworks.running = true
+            onRead: {
+                getNetworks.running = true;
+                getInterfacesProc.running = true;
+            }
         }
     }
     Process {
         id: disconnectProc
 
         stdout: SplitParser {
-            onRead: getNetworks.running = true
+            onRead: {
+                getNetworks.running = true;
+                getInterfacesProc.running = true;
+            }
         }
     }
     Process {
@@ -155,20 +180,142 @@ Singleton {
                     const match = rNetworks.find(n => n.frequency === network.frequency && n.ssid === network.ssid && n.bssid === network.bssid);
                     if (match) {
                         match.lastIpcObject = network;
-                    } else {
-                        rNetworks.push(apComp.createObject(root, {
+                    } else if (apComp.status === Component.Ready) {
+                        const newNetwork = apComp.createObject(root, {
                             lastIpcObject: network
-                        }));
+                        });
+                        if (newNetwork) rNetworks.push(newNetwork);
                     }
                 }
             }
         }
     }
+    Process {
+        id: getInterfacesProc
+
+        command: ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device"]
+        environment: ({
+                LANG: "C.UTF-8",
+                LC_ALL: "C.UTF-8"
+            })
+        running: true
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.trim().split("\n").filter(line => line.length > 0);
+                const interfaceData = [];
+
+                for (const line of lines) {
+                    const parts = line.split(":");
+                    if (parts.length >= 3) {
+                        const name = parts[0];
+                        const type = parts[1];
+                        const state = parts[2];
+
+                        let interfaceType = type;
+                        if (type === "wifi" || type === "802-11-wireless") {
+                            interfaceType = "wifi";
+                        } else if (type === "ethernet") {
+                            interfaceType = "ethernet";
+                        }
+
+                        // Skip non-relevant interfaces
+                        if (interfaceType === "wifi" || interfaceType === "ethernet") {
+                            interfaceData.push({
+                                name: name,
+                                type: interfaceType,
+                                state: state,
+                                ip: ""  // Will be populated by getIpAddresses
+                            });
+                        }
+                    }
+                }
+
+                // Update interfaces list
+                const rInterfaces = root.interfaces;
+
+                // Remove interfaces that no longer exist
+                const destroyed = rInterfaces.filter(ri => !interfaceData.find(i => i.name === ri.name));
+                for (const iface of destroyed) {
+                    rInterfaces.splice(rInterfaces.indexOf(iface), 1).forEach(i => i.destroy());
+                }
+
+                // Add or update interfaces
+                for (const iface of interfaceData) {
+                    const match = rInterfaces.find(ri => ri.name === iface.name);
+                    if (match) {
+                        match.lastIpcObject = iface;
+                    } else if (ifaceComp.status === Component.Ready) {
+                        const newInterface = ifaceComp.createObject(root, {
+                            lastIpcObject: iface
+                        });
+                        if (newInterface) rInterfaces.push(newInterface);
+                    }
+                }
+
+                // Get IP addresses for connected interfaces
+                getIpAddresses.running = true;
+            }
+        }
+    }
+
+    Process {
+        id: getIpAddresses
+
+        command: ["bash", "-c", "for dev in $(nmcli -t -f DEVICE,STATE device | grep connected | cut -d: -f1); do ip=$(nmcli -t device show $dev | grep 'IP4.ADDRESS' | head -1 | cut -d: -f2 | cut -d/ -f1); if [ -n \"$ip\" ]; then echo \"$dev:$ip\"; fi; done"]
+        environment: ({
+                LANG: "C.UTF-8",
+                LC_ALL: "C.UTF-8"
+            })
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const lines = text.trim().split("\n").filter(line => line.length > 0);
+
+                for (const line of lines) {
+                    const parts = line.split(":");
+                    if (parts.length >= 2) {
+                        const deviceName = parts[0];
+                        const ip = parts[1];
+
+                        // Update the interface with IP address
+                        const iface = root.interfaces.find(i => i.name === deviceName);
+                        if (iface && ip) {
+                            const updatedObject = {
+                                name: iface.lastIpcObject.name,
+                                type: iface.lastIpcObject.type,
+                                state: iface.lastIpcObject.state,
+                                ip: ip
+                            };
+                            iface.lastIpcObject = updatedObject;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Component {
+        id: ifaceComp
+
+        NetworkInterface {
+        }
+    }
+
     Component {
         id: apComp
 
         AccessPoint {
         }
+    }
+
+    component NetworkInterface: QtObject {
+        readonly property string name: lastIpcObject.name
+        readonly property string type: lastIpcObject.type
+        readonly property string state: lastIpcObject.state
+        readonly property string ip: lastIpcObject.ip
+        required property var lastIpcObject
+        readonly property bool isConnected: state === "connected"
     }
 
     component AccessPoint: QtObject {

@@ -59,6 +59,27 @@ This configuration is packaged as a Nix flake with:
 - Qt6 QML modules
 - Nix with flakes enabled
 
+## ToDo
+- [ ] Remove open audio button (must be open to click on audio trayicon)
+- [ ] Connect to new wifi dont ask the password
+- [ ] DS
+  - [ ] Review opacity animations
+  - [ ] Propagate margin, radius and opacity to all components
+- [ ] Popups
+  - [ ] Review VPN to use foundations
+  - [ ] Performance redistrubute information
+- [ ] Bar
+  - [ ] Handle unknown icons
+- [ ] Notifications
+  - [ ] Add notificationTime
+  - [ ] Don't hide notification when hover
+  - [ ] Group notifications
+- [ ] Launcher
+  - [ ] Define interactive commands with a json
+- [ ] Services
+  - [ ] Review Network get ip command
+  - [ ] Create a generic VPN service to all VPNs
+
 ## Troubleshooting
 
 ### Process Management
