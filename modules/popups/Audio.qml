@@ -142,17 +142,6 @@ Item {
                 onClicked: Audio.toggleSourceMute()
             }
         }
-        Buttons.PrimaryButton {
-            Layout.topMargin: root.margin
-            rightIcon: "chevron_right"
-            text: qsTr("Open settings")
-            visible: true
-
-            onClicked: {
-                root.wrapper.hasCurrent = false;
-                Quickshell.execDetached(["pavucontrol"]);
-            }
-        }
     }
 
     // Update selection when audio devices change externally

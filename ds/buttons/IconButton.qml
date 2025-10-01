@@ -15,6 +15,7 @@ Rectangle {
     property string icon: ""
     property color iconColor: Foundations.palette.base07
     property string iconPath: ""  // For image file paths
+    property int iconPointSize: Foundations.font.size.xl
     readonly property bool useImageIcon: iconPath !== ""
 
     signal clicked
@@ -41,7 +42,7 @@ Rectangle {
     Icons.MaterialFontIcon {
         anchors.centerIn: parent
         color: root.activeFocus ? root.focusIconColor : root.iconColor
-        font.pointSize: Foundations.font.size.xl
+        font.pointSize: root.iconPointSize
         font.weight: 500
         text: root.icon
         visible: !root.useImageIcon

@@ -76,9 +76,6 @@ This configuration is packaged as a Nix flake with:
   - [ ] Group notifications
 - [ ] Launcher
   - [ ] Define interactive commands with a json
-- [ ] Services
-  - [ ] Review Network get ip command
-  - [ ] Create a generic VPN service to all VPNs
 
 ## Troubleshooting
 

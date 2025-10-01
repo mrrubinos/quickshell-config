@@ -4,7 +4,8 @@ import qs.services
 import qs.services as Services
 import qs.ds
 import qs.ds.text as Text
-import qs.ds.icons as Icons
+import qs.ds.icons
+import qs.ds.buttons
 import Quickshell
 import Quickshell.Bluetooth
 import Quickshell.Services.UPower
@@ -45,24 +46,31 @@ Rectangle {
             sourceComponent: RowLayout {
                 spacing: iconSpacing
 
-                Icons.MaterialFontIcon {
+                MaterialFontIcon {
                     animate: true
                     color: root.colour
                     text: "screen_record"
                     visible: ScreenShare.isSharing
                 }
 
-                Icons.MaterialFontIcon {
+                MaterialFontIcon {
                     animate: true
                     color: root.colour
                     text: "mic_off"
                     visible: Audio.sourceMuted
                 }
 
-                Icons.MaterialFontIcon {
-                    animate: true
-                    color: root.colour
-                    text: Services.IconsService.getVolumeIcon(Audio.volume, Audio.muted)
+                IconButton {
+                    buttonColor: "transparent"
+                    focusColor: "transparent"
+                    iconColor: root.colour
+                    icon: Services.IconsService.getVolumeIcon(Audio.volume, Audio.muted)
+                    buttonSize: Foundations.font.size.xl
+                    iconPointSize: Foundations.font.size.m
+
+                    onClicked: {
+                        Quickshell.execDetached(["pavucontrol"]);
+                    }
                 }
             }
         }
@@ -93,7 +101,7 @@ Rectangle {
         WrappedLoader {
             name: "network"
 
-            sourceComponent: Icons.MaterialFontIcon {
+            sourceComponent: MaterialFontIcon {
                 animate: true
                 color: root.colour
                 text: {
@@ -114,7 +122,7 @@ Rectangle {
                 implicitWidth: vpnIcon.implicitWidth
                 implicitHeight: vpnIcon.implicitHeight
 
-                Icons.MaterialFontIcon {
+                MaterialFontIcon {
                     id: vpnIcon
                     animate: true
                     color: {
@@ -168,7 +176,7 @@ Rectangle {
                 spacing: iconSpacing
 
                 // Bluetooth icon
-                Icons.MaterialFontIcon {
+                MaterialFontIcon {
                     animate: true
                     color: root.colour
                     text: {
@@ -186,7 +194,7 @@ Rectangle {
                         values: Bluetooth.devices.values.filter(d => d.state !== BluetoothDeviceState.Disconnected)
                     }
 
-                    Icons.MaterialFontIcon {
+                    MaterialFontIcon {
                         id: device
 
                         required property BluetoothDevice modelData
@@ -220,7 +228,7 @@ Rectangle {
         WrappedLoader {
             name: "battery"
 
-            sourceComponent: Icons.MaterialFontIcon {
+            sourceComponent: MaterialFontIcon {
                 animate: true
                 color: !UPower.onBattery || UPower.displayDevice.percentage > 0.2 ? root.colour : Foundations.palette.base08
                 text: {

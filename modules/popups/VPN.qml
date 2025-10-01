@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.services
 import qs.ds
 import qs.ds.buttons as Buttons
+import qs.ds.list
 import qs.ds.text as Text
 import qs.ds.icons as Icons
 import qs.ds.animations
@@ -27,85 +28,10 @@ ColumnLayout {
     }
 
     // Header section
-    RowLayout {
-        Layout.fillWidth: true
+    Text.HeadingS {
         Layout.rightMargin: root.margin
         Layout.topMargin: root.margin
-        spacing: Foundations.spacing.s
-
-        // VPN icon with status indication
-        Rectangle {
-            Layout.preferredHeight: 32
-            Layout.preferredWidth: 32
-            color: root.statusColor
-            radius: Foundations.radius.m
-
-            Behavior on color {
-                BasicColorAnimation {
-                }
-            }
-
-            // Subtle pulsing animation for connecting state
-            SequentialAnimation on opacity {
-                running: VPN.connecting
-                loops: Animation.Infinite
-                BasicNumberAnimation { from: 1.0; to: 0.4; duration: Foundations.duration.slow }
-                BasicNumberAnimation { from: 0.4; to: 1.0; duration: Foundations.duration.slow }
-            }
-
-            Icons.MaterialFontIcon {
-                anchors.centerIn: parent
-                color: Foundations.palette.base00
-                font.pointSize: Foundations.font.size.l
-                text: VPN.statusIcon
-            }
-
-            // Small progress dot indicator
-            Rectangle {
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.rightMargin: -2
-                anchors.topMargin: -2
-                width: 8
-                height: 8
-                radius: 4
-                color: Foundations.palette.base09
-                visible: VPN.connecting
-
-                SequentialAnimation on scale {
-                    running: VPN.connecting
-                    loops: Animation.Infinite
-                    BasicNumberAnimation { from: 1.0; to: 1.4; duration: Foundations.duration.standard }
-                    BasicNumberAnimation { from: 1.4; to: 1.0; duration: Foundations.duration.standard }
-                }
-            }
-        }
-
-        ColumnLayout {
-            Layout.fillWidth: true
-            spacing: 2
-
-            Text.HeadingS {
-                text: qsTr("VPN Connection")
-            }
-        }
-
-        Item {
-            Layout.fillWidth: true
-        }
-
-        // Connection toggle switch
-        Switch {
-            checked: VPN.connected
-            enabled: VPN.available && !VPN.connecting
-            opacity: VPN.available ? 1.0 : 0.5
-
-            onToggled: VPN.toggle()
-
-            // Custom colors for VPN state
-            activeColor: VPN.connecting ? Foundations.palette.base09 : Foundations.palette.base05
-            inactiveColor: Foundations.palette.base03
-        }
+        text: qsTr("VPN Connection")
     }
 
     // Connection details section (shown when connected)
@@ -157,13 +83,57 @@ ColumnLayout {
         }
     }
 
+    // Available VPN connections list
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.rightMargin: root.margin
+        spacing: Foundations.spacing.s
+        visible: VPN.connections.length > 0
+
+        Text.BodyS {
+            color: Foundations.palette.base04
+            text: qsTr("Available Connections")
+            font.weight: Font.Medium
+        }
+
+        Repeater {
+            model: VPN.connections
+
+            ListItem {
+                required property var modelData
+
+                readonly property bool isActive: VPN.serviceName === modelData.serviceName && VPN.connected
+                readonly property bool isConnecting: VPN.serviceName === modelData.serviceName && VPN.connecting
+
+                Layout.fillWidth: true
+                text: modelData.displayName
+                leftIcon: "vpn_key"
+                selected: VPN.serviceName === modelData.serviceName
+                disabled: VPN.connecting
+                primaryActionActive: isActive
+                primaryActionLoading: isConnecting
+                primaryFontIcon: isActive ? "link_off" : "link"
+
+                onPrimaryActionClicked: {
+                    if (isActive) {
+                        // If this VPN is connected, disconnect it
+                        VPN.disconnect();
+                    } else {
+                        // Connect to this VPN
+                        VPN.connectToService(modelData.serviceName);
+                    }
+                }
+            }
+        }
+    }
+
     // Error message section
     Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: errorText.implicitHeight + Foundations.spacing.s * 2
         Layout.rightMargin: root.margin
 
-        color: Foundations.palette.base08 + "20" // Semi-transparent red
+        color: Foundations.palette.base08
         radius: Foundations.radius.s
         border.color: Foundations.palette.base08
         border.width: 1

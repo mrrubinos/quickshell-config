@@ -13,13 +13,17 @@ Singleton {
     property bool connecting: false
     property bool available: true
     property string errorMessage: ""
-    property string connectionName: "noma"
-    property string serviceName: "openvpn-noma.service"
+    property string connectionName: ""
+    property string serviceName: ""
 
     // Connection info
     property string serverLocation: ""
     property string ipAddress: ""
     property string connectionTime: ""
+
+    // List of available VPN connections
+    property var connections: []
+    property string activeConnection: ""
 
     // Private properties for internal state management
     property Timer statusTimer: Timer {
@@ -31,6 +35,7 @@ Singleton {
 
     // Initialize on component creation
     Component.onCompleted: {
+        scanConnections();
         refreshStatus();
     }
 
@@ -152,6 +157,41 @@ Singleton {
         }
     }
 
+    Process {
+        id: scanProcess
+        command: ["systemctl", "list-unit-files", "--type=service"]
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const output = text || "";
+                const lines = output.split('\n');
+                const vpnConnections = [];
+
+                for (const line of lines) {
+                    // Look for openvpn services
+                    if (line.includes('openvpn') && line.includes('.service')) {
+                        const serviceName = line.split(/\s+/)[0];
+                        // Extract connection name (remove openvpn- prefix and .service suffix)
+                        let connectionName = serviceName.replace(/^openvpn-/, '').replace(/\.service$/, '');
+                        if (connectionName === 'openvpn') connectionName = 'default';
+
+                        // Skip non-VPN services like restart
+                        if (connectionName === 'restart') continue;
+
+                        vpnConnections.push({
+                            serviceName: serviceName,
+                            connectionName: connectionName,
+                            displayName: connectionName.charAt(0).toUpperCase() + connectionName.slice(1)
+                        });
+                    }
+                }
+
+                connections = vpnConnections;
+            }
+        }
+    }
+
     // Public methods
     function connect() {
         if (connecting || connected) return;
@@ -186,6 +226,29 @@ Singleton {
     function getConnectionInfo() {
         ipProcess.running = true;
         timeProcess.running = true;
+    }
+
+    // Scan for available VPN connections
+    function scanConnections() {
+        if (scanProcess.running) return;
+        scanProcess.running = true;
+    }
+
+    // Connect to a specific VPN service
+    function connectToService(serviceName) {
+        if (connecting || connected) return;
+
+        // Update current service
+        root.serviceName = serviceName;
+
+        // Find the connection name from the list
+        const connection = connections.find(conn => conn.serviceName === serviceName);
+        if (connection) {
+            connectionName = connection.connectionName;
+            activeConnection = serviceName;
+        }
+
+        connect();
     }
 
     // Status icon name for display
