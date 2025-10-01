@@ -1,0 +1,6 @@
+# Temporary files
+*.tmp
+*.swp
+
+# QML LS
+.qmlls.ini
