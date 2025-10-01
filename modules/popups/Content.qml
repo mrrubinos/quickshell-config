@@ -29,6 +29,7 @@ Item {
             name: "network"
 
             sourceComponent: Network {
+                wrapper: root.wrapper
             }
         }
         Popout {

@@ -15,9 +15,25 @@ BackgroundWrapper {
     property real currentCenter
     property string currentName
     property bool hasCurrent
+    property bool needsFocus: false
     readonly property real nonAnimHeight: hasCurrent ? (children.find(c => c.shouldBeActive)?.implicitHeight ?? content.implicitHeight) : 0
     readonly property real nonAnimWidth: hasCurrent ? (children.find(c => c.shouldBeActive)?.implicitWidth ?? content.implicitWidth) : 0
     required property ShellScreen screen
+
+    focus: needsFocus
+
+    // Reset needsFocus when wrapper loses focus or becomes inactive
+    onHasCurrentChanged: {
+        if (!hasCurrent) {
+            needsFocus = false;
+        }
+    }
+
+    onActiveFocusChanged: {
+        if (!activeFocus) {
+            needsFocus = false;
+        }
+    }
 
     clip: true
     implicitHeight: nonAnimHeight

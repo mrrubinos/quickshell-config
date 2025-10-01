@@ -14,7 +14,11 @@ import QtQuick.Layouts
 ColumnLayout {
     id: root
 
+    required property var wrapper
+
     property string connectingToSsid: ""
+    property string pendingSsid: ""
+    property bool showPasswordDialog: false
 
     // ToDo: Review
     property int margin: Foundations.spacing.xxs
@@ -121,7 +125,13 @@ ColumnLayout {
                     Network.disconnectFromNetwork();
                 } else {
                     root.connectingToSsid = modelData.ssid;
+                    root.pendingSsid = modelData.ssid;
                     Network.connectToNetwork(modelData.ssid, "");
+
+                    if (modelData.isSecure) {
+                        connectionCheckTimer.ssid = modelData.ssid;
+                        connectionCheckTimer.start();
+                    }
                 }
             }
         }
@@ -137,15 +147,150 @@ ColumnLayout {
         onClicked: Network.rescanWifi()
     }
 
+    // Timer to check if connection failed and show password dialog
+    Timer {
+        id: connectionCheckTimer
+        interval: 3000
+        repeat: false
+        property string ssid: ""
+
+        onTriggered: {
+            if (root.connectingToSsid === ssid && (!Network.active || Network.active.ssid !== ssid)) {
+                console.log("Connection failed for", ssid, "- showing password dialog");
+                root.connectingToSsid = "";
+                root.pendingSsid = ssid;
+                root.showPasswordDialog = true;
+            }
+        }
+    }
+
     // Reset connecting state when network changes
     Connections {
         function onActiveChanged(): void {
             if (Network.active && root.connectingToSsid === Network.active.ssid) {
                 root.connectingToSsid = "";
+                root.pendingSsid = "";
+                connectionCheckTimer.stop();
             }
         }
 
         target: Network
+    }
+
+    onShowPasswordDialogChanged: {
+        if (root.wrapper) {
+            root.wrapper.needsFocus = showPasswordDialog;
+        }
+    }
+
+    Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: passwordDialog.implicitHeight + Foundations.spacing.m * 2
+        Layout.rightMargin: root.margin
+
+        color: Foundations.palette.base01
+        radius: Foundations.radius.m
+        border.color: Foundations.palette.base03
+        border.width: 1
+        visible: root.showPasswordDialog
+
+        ColumnLayout {
+            id: passwordDialog
+
+            anchors.fill: parent
+            anchors.margins: Foundations.spacing.m
+            spacing: Foundations.spacing.s
+
+            Text.BodyS {
+                color: Foundations.palette.base04
+                text: qsTr("Enter WiFi Password")
+                font.weight: Font.Medium
+            }
+
+            Text.BodyS {
+                color: Foundations.palette.base05
+                text: qsTr("Network: %1").arg(root.pendingSsid)
+            }
+
+            TextField {
+                id: passwordField
+                Layout.fillWidth: true
+
+                background: null
+                backgroundColor: "transparent"
+                borderWidth: 0
+                placeholderText: qsTr("Password")
+                echoMode: TextInput.Password
+                font.pointSize: Foundations.font.size.s
+
+                Keys.onReturnPressed: connectButton.clicked()
+                Keys.onEnterPressed: connectButton.clicked()
+                Keys.onEscapePressed: cancelButton.clicked()
+
+                Timer {
+                    id: focusTimer
+                    interval: 1
+                    repeat: true
+
+                    onTriggered: {
+                        if (passwordField.visible && root.showPasswordDialog) {
+                            passwordField.forceActiveFocus();
+                            passwordField.focus = true;
+                            stop();
+                        }
+                    }
+                }
+
+                Connections {
+                    function onShowPasswordDialogChanged(): void {
+                        if (root.showPasswordDialog) {
+                            focusTimer.start();
+                        } else {
+                            focusTimer.stop();
+                            passwordField.text = "";
+                        }
+                    }
+
+                    target: root
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: Foundations.spacing.s
+
+                Buttons.Button {
+                    id: cancelButton
+                    Layout.fillWidth: true
+                    text: qsTr("Cancel")
+
+                    onClicked: {
+                        root.showPasswordDialog = false;
+                        root.pendingSsid = "";
+                        if (root.wrapper) {
+                            root.wrapper.needsFocus = false;
+                        }
+                    }
+                }
+
+                Buttons.PrimaryButton {
+                    id: connectButton
+                    Layout.fillWidth: true
+                    text: qsTr("Connect")
+                    enabled: passwordField.text.length > 0
+
+                    onClicked: {
+                        root.connectingToSsid = root.pendingSsid;
+                        Network.connectToNetwork(root.pendingSsid, passwordField.text);
+                        root.showPasswordDialog = false;
+                        root.pendingSsid = "";
+                        if (root.wrapper) {
+                            root.wrapper.needsFocus = false;
+                        }
+                    }
+                }
+            }
+        }
     }
 
     component Toggle: RowLayout {

@@ -20,7 +20,11 @@ Singleton {
     readonly property bool hasEthernetConnection: ethernetIp !== ""
 
     function connectToNetwork(ssid: string, password: string): void {
-        connectProc.exec(["nmcli", "conn", "up", ssid]);
+        if (password && password.length > 0) {
+            connectProc.exec(["nmcli", "device", "wifi", "connect", ssid, "password", password]);
+        } else {
+            connectProc.exec(["nmcli", "connection", "up", ssid]);
+        }
     }
     function disconnectFromNetwork(): void {
         if (active) {

@@ -110,7 +110,7 @@ Variants {
                 property bool osd
                 property bool session
 
-                readonly property bool captureKeyboard: launcher | notifications | session
+                readonly property bool captureKeyboard: launcher | notifications | session | panels.popouts.needsFocus
 
                 Component.onCompleted: Visibilities.load(scope.modelData, this)
             }

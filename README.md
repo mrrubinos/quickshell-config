@@ -60,14 +60,11 @@ This configuration is packaged as a Nix flake with:
 - Nix with flakes enabled
 
 ## ToDo
-- [ ] Remove open audio button (must be open to click on audio trayicon)
-- [ ] Connect to new wifi dont ask the password
 - [ ] DS
   - [ ] Review opacity animations
   - [ ] Propagate margin, radius and opacity to all components
 - [ ] Popups
-  - [ ] Review VPN to use foundations
-  - [ ] Performance redistrubute information
+  - [ ] Redistribute the Performance popup information
 - [ ] Bar
   - [ ] Handle unknown icons
 - [ ] Notifications

@@ -29,7 +29,7 @@ TextField {
         border.color: root.activeFocus ? root.focusBorderColor : root.borderColor
         border.width: root.borderWidth
         color: root.backgroundColor
-        radius: Foundations.radius.m
+        radius: Foundations.radius.s
 
         Behavior on border.color {
             ColorAnimation {
