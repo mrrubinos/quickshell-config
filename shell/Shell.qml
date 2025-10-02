@@ -107,9 +107,8 @@ Variants {
                 property bool bar
                 property bool launcher
                 property bool notifications
-                property bool session
 
-                readonly property bool captureKeyboard: launcher | notifications | session | panels.popouts.needsFocus
+                readonly property bool captureKeyboard: launcher | notifications | panels.popouts.needsFocus
 
                 Component.onCompleted: Visibilities.load(scope.modelData, this)
             }

@@ -65,7 +65,6 @@ MouseArea {
         function onLauncherChanged() {
             if (root.visibilities.launcher) {
                 // Launcher opened - close all other panels
-                root.visibilities.session = false;
                 root.visibilities.bar = false;
                 root.popouts.hasCurrent = false;
             }

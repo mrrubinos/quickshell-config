@@ -21,13 +21,6 @@ Shape {
 
     Background {
         maxAvailableHeight: root.height
-        startX: wrapper.x + root.radius
-        startY: wrapper.y
-        wrapper: root.panels.session
-        radius: root.radius
-    }
-    Background {
-        maxAvailableHeight: root.height
         startX: (root.width - wrapper.width) / 2 - root.radius
         startY: 0
         wrapper: root.panels.launcher

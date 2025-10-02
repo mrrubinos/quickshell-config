@@ -128,10 +128,6 @@ Item {
                             current.currentIndex = 0;
                     }
                 }
-                function onSessionChanged(): void {
-                    if (root.visibilities.launcher && !root.visibilities.session)
-                        focusTimer.start();
-                }
 
                 target: root.visibilities
             }

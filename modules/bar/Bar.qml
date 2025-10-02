@@ -116,16 +116,9 @@ Item {
         WrappedLoader {
             id: notificationToggle
 
-            sourceComponent: NotificationListToggle {
-                visibilities: root.visibilities
-            }
-        }
-        WrappedLoader {
-            id: power
-
             Layout.rightMargin: root.hPadding
 
-            sourceComponent: Power {
+            sourceComponent: NotificationListToggle {
                 visibilities: root.visibilities
             }
         }

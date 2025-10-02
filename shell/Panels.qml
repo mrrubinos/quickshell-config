@@ -1,6 +1,5 @@
 import qs.ds
 import qs.modules.notifications as NotificationsList
-import qs.modules.session as Session
 import qs.modules.launcher as Launcher
 import qs.modules.popups as Popups
 import Quickshell
@@ -14,7 +13,6 @@ Item {
     readonly property NotificationsList.Wrapper notifications: notifications
     readonly property Popups.Wrapper popouts: popouts
     required property ShellScreen screen
-    readonly property Session.Wrapper session: session
     required property PersistentProperties visibilities
     required property int margin
 
@@ -22,13 +20,6 @@ Item {
     anchors.margins: margin
     anchors.topMargin: bar.implicitHeight
 
-    Session.Wrapper {
-        id: session
-
-        anchors.right: parent.right
-        anchors.verticalCenter: parent.verticalCenter
-        visibilities: root.visibilities
-    }
     Launcher.Wrapper {
         id: launcher
 
