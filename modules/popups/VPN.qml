@@ -160,21 +160,6 @@ ColumnLayout {
         }
     }
 
-    // Action buttons
-    RowLayout {
-        Layout.fillWidth: true
-        Layout.rightMargin: root.margin
-        Layout.topMargin: root.margin
-        spacing: Foundations.spacing.s
-
-        Buttons.Button {
-            enabled: VPN.available
-            leftIcon: "refresh"
-            text: qsTr("Refresh")
-
-            onClicked: VPN.refreshStatus()
-        }
-    }
 
     // Component for detail rows
     component DetailRow: RowLayout {

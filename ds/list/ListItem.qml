@@ -66,13 +66,19 @@ Item {
 
     // Ripple effect background for clickable items
     Loader {
-        active: root.isClickable
+        active: root.isClickable || (root.primaryFontIcon !== "" && root.secondaryFontIcon === "")
         anchors.fill: parent
         z: 0  // Behind content
 
         sourceComponent: Component {
             InteractiveArea {
                 function onClicked(event): void {
+                    // If only primary action exists and no secondary, make whole item clickable
+                    if (root.primaryFontIcon !== "" && root.secondaryFontIcon === "") {
+                        root.primaryActionClicked();
+                        return;
+                    }
+
                     // Check if click is on action buttons area
                     const buttonAreaWidth = 80; // Approximate width of button area
                     if (event.x > width - buttonAreaWidth) {
