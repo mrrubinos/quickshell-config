@@ -1,7 +1,6 @@
 import qs.services
 import qs.ds
 import qs.modules.popups as Popups
-import qs.modules.osd as Osd
 import Quickshell
 import QtQuick
 
@@ -9,7 +8,6 @@ MouseArea {
     id: root
 
     required property Item bar
-    property bool osdHovered
     required property Panels panels
     required property Popups.Wrapper popouts
     required property ShellScreen screen
@@ -43,8 +41,6 @@ MouseArea {
 
     onContainsMouseChanged: {
         if (!containsMouse) {
-            visibilities.osd = false;
-            osdHovered = false;
             popouts.hasCurrent = false;
         }
     }
@@ -56,12 +52,6 @@ MouseArea {
         if (visibilities.launcher) {
             return;
         }
-
-        // Show osd on hover
-        const showOsd = inRightPanel(panels.osd, x, y);
-
-        visibilities.osd = showOsd;
-        osdHovered = showOsd;
 
         // Show popouts on hover
         if (y < bar.implicitHeight)
@@ -75,29 +65,12 @@ MouseArea {
         function onLauncherChanged() {
             if (root.visibilities.launcher) {
                 // Launcher opened - close all other panels
-                root.visibilities.osd = false;
                 root.visibilities.session = false;
                 root.visibilities.bar = false;
                 root.popouts.hasCurrent = false;
-                root.osdHovered = false;
-            } else {
-                // Also hide OSD if they're not being hovered
-                const inOsdArea = root.inRightPanel(root.panels.osd, root.mouseX, root.mouseY);
-
-                if (!inOsdArea) {
-                    root.visibilities.osd = false;
-                    root.osdHovered = false;
-                }
             }
-        }
-        function onOsdChanged() {
         }
 
         target: root.visibilities
-    }
-    Osd.Interactions {
-        hovered: root.osdHovered
-        screen: root.screen
-        visibilities: root.visibilities
     }
 }

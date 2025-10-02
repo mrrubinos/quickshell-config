@@ -107,7 +107,6 @@ Variants {
                 property bool bar
                 property bool launcher
                 property bool notifications
-                property bool osd
                 property bool session
 
                 readonly property bool captureKeyboard: launcher | notifications | session | panels.popouts.needsFocus
