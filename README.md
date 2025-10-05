@@ -61,10 +61,7 @@ This configuration is packaged as a Nix flake with:
 
 ## ToDo
 - [ ] DS
-  - [ ] Review opacity animations
   - [ ] Propagate margin, radius and opacity to all components
-- [ ] Popups
-  - [ ] Redistribute the Performance popup information
 - [ ] Bar
   - [ ] Handle unknown icons
 - [ ] Notifications

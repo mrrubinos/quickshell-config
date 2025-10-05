@@ -74,8 +74,8 @@ ColumnLayout {
         icon: "memory_alt"
         title: "Memory"
         resourceValue: SystemUsage.memPerc || 0
-        label: `${root.formatBytes(SystemUsage.memUsed || 0)} / ${root.formatBytes(SystemUsage.memTotal || 0)}`
-        sublabel: `${Math.round((SystemUsage.memPerc || 0) * 100)}% used`
+        label: `${Math.round((SystemUsage.memPerc || 0) * 100)}%`
+        sublabel: `${root.formatBytes(SystemUsage.memUsed || 0)} / ${root.formatBytes(SystemUsage.memTotal || 0)}`
         barColor: Foundations.palette.base05
     }
 
@@ -89,8 +89,8 @@ ColumnLayout {
         icon: "storage"
         title: "Storage"
         resourceValue: SystemUsage.storagePerc || 0
-        label: `${root.formatBytes(SystemUsage.storageUsed || 0)} / ${root.formatBytes(SystemUsage.storageTotal || 0)}`
-        sublabel: `${root.formatBytes((SystemUsage.storageTotal || 0) - (SystemUsage.storageUsed || 0))} free`
+        label: `${root.formatBytes((SystemUsage.storageTotal || 0) - (SystemUsage.storageUsed || 0))} free`
+        sublabel: `${root.formatBytes(SystemUsage.storageUsed || 0)} / ${root.formatBytes(SystemUsage.storageTotal || 0)}`
         barColor: Foundations.palette.base05
     }
 
@@ -109,36 +109,39 @@ ColumnLayout {
             Layout.fillWidth: true
             spacing: Foundations.spacing.m
 
-            // Icon
-            MaterialFontIcon {
-                color: barColor
-                font.pointSize: Foundations.font.size.m
-                text: icon
+            // Icon and title (left side, vertically centered)
+            RowLayout {
+                Layout.alignment: Qt.AlignVCenter
+                spacing: Foundations.spacing.m
+
+                MaterialFontIcon {
+                    color: barColor
+                    font.pointSize: Foundations.font.size.m
+                    text: icon
+                }
+
+                Text.BodyM {
+                    text: title
+                    color: Foundations.palette.base05
+                }
             }
 
-            // Title and values
+            Item { Layout.fillWidth: true }
+
+            // Values (right side)
             ColumnLayout {
-                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
                 spacing: 2
 
-                RowLayout {
-                    Layout.fillWidth: true
-
-                    Text.BodyM {
-                        text: title
-                        color: Foundations.palette.base05
-                    }
-
-                    Item { Layout.fillWidth: true }
-
-                    Text.BodyS {
-                        text: label
-                        color: barColor
-                        font.family: Foundations.font.family.mono
-                    }
+                Text.BodyS {
+                    Layout.alignment: Qt.AlignRight
+                    text: label
+                    color: barColor
+                    font.family: Foundations.font.family.mono
                 }
 
                 Text.BodyS {
+                    Layout.alignment: Qt.AlignRight
                     text: sublabel
                     color: Foundations.palette.base04
                 }
