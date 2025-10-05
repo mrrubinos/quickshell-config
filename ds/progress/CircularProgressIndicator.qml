@@ -55,7 +55,6 @@ BusyIndicator {
 
     Updater {
         id: updater
-
     }
     NumberAnimation {
         duration: updater.duration
@@ -82,14 +81,14 @@ BusyIndicator {
 
     component Updater: QtObject {
         readonly property list<int> collapseDelay: [667, 2017, 3367, 4717]
-        readonly property int collapseDuration: 667
-        readonly property int completeEndDuration: 333
+        readonly property int collapseDuration: Foundations.duration.slow
+        readonly property int completeEndDuration: Foundations.duration.slow
         property real completeEndProgress: 0
         readonly property int constantRotDeg: 1520
         readonly property int duration: 5400
         property real endFraction: 0
         readonly property list<int> expandDelay: [0, 1350, 2700, 4050]
-        readonly property int expandDuration: 667
+        readonly property int expandDuration: Foundations.duration.slow
         readonly property int extraDegPerCycle: 250
         property real progress: 0
         property real rotation: 0

@@ -33,14 +33,14 @@ TextField {
 
         Behavior on border.color {
             ColorAnimation {
-                duration: 200
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }
     }
     Behavior on color {
         ColorAnimation {
-            duration: 200
+            duration: Foundations.duration.fast
             easing.type: Easing.InOutQuad
         }
     }
@@ -55,7 +55,7 @@ TextField {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 150
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }
@@ -93,7 +93,7 @@ TextField {
     }
     Behavior on placeholderTextColor {
         ColorAnimation {
-            duration: 200
+            duration: Foundations.duration.fast
             easing.type: Easing.InOutQuad
         }
     }

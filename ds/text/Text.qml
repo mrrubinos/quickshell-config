@@ -34,7 +34,7 @@ Text {
 
     Behavior on color {
         ColorAnimation {
-            duration: 150
+            duration: Foundations.duration.fast
             easing.type: Easing.InOutQuad
         }
     }

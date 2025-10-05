@@ -42,6 +42,7 @@ Singleton {
         property int standard: 400
         property int fast: 200
         property int fastest: 50
+        property int zero: 0
     }
     component Font: QtObject {
         property FontFamily family: FontFamily {

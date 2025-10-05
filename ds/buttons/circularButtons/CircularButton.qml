@@ -32,7 +32,7 @@ Rectangle {
     // Color transitions
     Behavior on color {
         ColorAnimation {
-            duration: 150
+            duration: Foundations.duration.fast
             easing.type: Easing.InOutQuad
         }
     }
@@ -62,7 +62,7 @@ Rectangle {
 
         Behavior on opacity {
             NumberAnimation {
-                duration: 200
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }

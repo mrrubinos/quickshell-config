@@ -32,7 +32,7 @@ ListView {
 
     bottomMargin: margin
     highlightMoveDuration: Foundations.duration.standard
-    highlightResizeDuration: 0
+    highlightResizeDuration: Foundations.duration.zero
     implicitHeight: (itemHeight + margin) * Math.min(maxShown, count)
     orientation: Qt.Vertical
     state: {

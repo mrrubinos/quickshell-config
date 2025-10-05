@@ -27,13 +27,13 @@ Switch {
 
         Behavior on border.color {
             ColorAnimation {
-                duration: 200
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }
         Behavior on color {
             ColorAnimation {
-                duration: 200
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }
@@ -63,19 +63,19 @@ Switch {
 
         Behavior on anchors.leftMargin {
             NumberAnimation {
-                duration: 150
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }
         Behavior on color {
             ColorAnimation {
-                duration: 200
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }
         Behavior on width {
             NumberAnimation {
-                duration: 150
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }

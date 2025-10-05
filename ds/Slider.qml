@@ -56,7 +56,7 @@ Slider {
 
         Behavior on implicitWidth {
             NumberAnimation {
-                duration: 150
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }

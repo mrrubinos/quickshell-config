@@ -55,7 +55,7 @@ Item {
 
     Behavior on opacity {
         NumberAnimation {
-            duration: 300
+            duration: Foundations.duration.standard
             easing.type: Easing.OutQuart
         }
     }

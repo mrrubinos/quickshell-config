@@ -10,7 +10,7 @@ import qs.services
 Rectangle {
     id: root
 
-    readonly property int animDuration: 200
+    readonly property int animDuration: Foundations.duration.fast
     property color backgroundColor: Foundations.palette.base00
     property bool disabled: false
     property color foregroundColor: Foundations.palette.base05

@@ -32,7 +32,7 @@ RadioButton {
 
         Behavior on border.color {
             ColorAnimation {
-                duration: 150
+                duration: Foundations.duration.fast
                 easing.type: Easing.InOutQuad
             }
         }

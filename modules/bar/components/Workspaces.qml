@@ -104,7 +104,7 @@ Item {
             value: true
         }
         NumberAnimation {
-            duration: 1000
+            duration: Foundations.duration.slow
             easing.type: Easing.OutQuint
             from: 0.0
             property: "masterProgress"
@@ -143,13 +143,7 @@ Item {
                     return Foundations.palette.base02;
                 }
                 height: 12
-                radius: {
-                    if (model.isFocused)
-                        return 12;
-                    else
-                        // half of focused height (if you want to animate this too)
-                        return 6;
-                }
+                radius: 6
                 scale: model.isFocused ? 1.0 : 0.9
                 width: {
                     if (model.isFocused)
@@ -163,37 +157,19 @@ Item {
 
                 Behavior on color {
                     ColorAnimation {
-                        duration: 200
+                        duration: Foundations.duration.fast
                         easing.type: Easing.InOutCubic
-                    }
-                }
-                Behavior on height {
-                    NumberAnimation {
-                        duration: 350
-                        easing.type: Easing.OutBack
-                    }
-                }
-                Behavior on opacity {
-                    NumberAnimation {
-                        duration: 200
-                        easing.type: Easing.InOutCubic
-                    }
-                }
-                Behavior on radius {
-                    NumberAnimation {
-                        duration: 350
-                        easing.type: Easing.OutBack
                     }
                 }
                 Behavior on scale {
                     NumberAnimation {
-                        duration: 300
+                        duration: Foundations.duration.standard
                         easing.type: Easing.OutBack
                     }
                 }
                 Behavior on width {
                     NumberAnimation {
-                        duration: 350
+                        duration: Foundations.duration.standard
                         easing.type: Easing.OutBack
                     }
                 }

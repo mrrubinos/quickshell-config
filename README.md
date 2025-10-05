@@ -87,3 +87,8 @@ pgrep -af quickshell
 # Kill all QuickShell instances
 pgrep -f "/bin/quickshell.*-p" | xargs -r kill
 ```
+
+## 📚 References
+* [Quickshell](https://quickshell.org/docs/v0.2.0/types/Quickshell.Hyprland/HyprlandWorkspace/)
+* [Caelestia-shell](https://github.com/caelestia-dots/shell)
+* [Shovel-shell](https://github.com/shovelwithasprout/shovel-shell)

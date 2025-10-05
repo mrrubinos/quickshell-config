@@ -35,7 +35,9 @@ Singleton {
         onNotification: notification => {
             notification.tracked = true;
 
-            root.popups.push(notification)
+            if (!ScreenShare.isSharing) {
+                root.popups.push(notification)
+            }
             
             // Connect to notification closed signal to clean up
             notification.closed.connect(() => {

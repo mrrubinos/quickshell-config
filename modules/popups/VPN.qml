@@ -49,7 +49,6 @@ ColumnLayout {
 
         Behavior on opacity {
             BasicNumberAnimation {
-                duration: Foundations.duration.standard
             }
         }
 
