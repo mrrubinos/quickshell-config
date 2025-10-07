@@ -68,8 +68,6 @@ This configuration is packaged as a Nix flake with:
   - [ ] Add notificationTime
   - [ ] Don't hide notification when hover
   - [ ] Group notifications
-- [ ] Launcher
-  - [ ] Define interactive commands with a json
 
 ## Troubleshooting
 

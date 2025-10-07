@@ -1,31 +1,39 @@
-pragma Singleton
-
+import qs.modules.launcher
 import qs.services.search
 import qs.services
-import qs.modules.launcher
 import Quickshell
 import QtQuick
 
 Search {
     id: root
 
-    property string actionPrefix: ">"
-    readonly property list<LauncherItemModel> actions: [
-        LauncherItemModel {
-            autocompleteText: ">calc "
-            fontIcon: "calculate"
-            isAction: true
-            name: qsTr("Calculator")
-            subtitle: qsTr("Do simple math equations (powered by Qalc)")
-        }
-    ]
+    required property string prefix
+    required property var commandList
+
 
     function search(search: string): list<var> {
         return query(search);
     }
+
     function transformSearch(search: string): string {
-        return search.slice(actionPrefix.length);
+        return search.slice(prefix.length);
     }
 
-    list: actions
+    list: variants.instances
+
+    Variants {
+        id: variants
+
+        model: commandList
+
+        delegate: LauncherItemModel {
+            required property var modelData
+
+            autocompleteText: modelData.commandPrefix
+            fontIcon: modelData.fontIcon
+            isAction: true
+            name: modelData.name
+            subtitle: modelData.subtitle
+        }
+    }
 }

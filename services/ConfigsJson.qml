@@ -9,6 +9,7 @@ Singleton {
 
     property alias commands: commandsAdapter.commands
     property alias sessionCommands: sessionCommandsAdapter.commands
+    property alias interactiveCommands: interactiveCommandsAdapter.commands
     property alias excludedDesktops: excludedDesktopsAdapter.excludedApps
 
     property FileView commandsFile: FileView {
@@ -28,6 +29,17 @@ Singleton {
 
         JsonAdapter {
             id: sessionCommandsAdapter
+
+            property var commands: []
+        }
+    }
+
+    property FileView interactiveCommandsFile: FileView {
+        path: `${Quickshell.shellDir}/interactive-commands.json`
+        watchChanges: true
+
+        JsonAdapter {
+            id: interactiveCommandsAdapter
 
             property var commands: []
         }

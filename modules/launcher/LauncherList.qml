@@ -4,7 +4,7 @@ import qs.services
 import qs.ds.list as List
 import qs.ds.animations
 import qs.ds
-import qs.modules.launcher.services as LauncheServices
+import qs.modules.launcher.services as LauncherServices
 import Quickshell
 import QtQuick
 import QtQuick.Controls
@@ -12,15 +12,19 @@ import QtQuick.Controls
 ListView {
     id: root
     
-    // Command launchers
-    property LauncheServices.CommandLauncher commandsLauncher: LauncheServices.CommandLauncher {
+    property LauncherServices.CommandLauncher commandsLauncher: LauncherServices.CommandLauncher {
         commandPrefix: "!"
         commandList: ConfigsJson.commands
     }
     
-    property LauncheServices.CommandLauncher sessionCommandsLauncher: LauncheServices.CommandLauncher {
+    property LauncherServices.CommandLauncher sessionCommandsLauncher: LauncherServices.CommandLauncher {
         commandPrefix: "#"
         commandList: ConfigsJson.sessionCommands
+    }
+
+    property LauncherServices.Actions actionsLauncher: LauncherServices.Actions {
+        prefix: ">"
+        commandList: ConfigsJson.interactiveCommands
     }
     required property TextField search
     required property PersistentProperties visibilities
@@ -29,30 +33,36 @@ ListView {
     property int itemHeight: 57
     property int maxShown: 8
     property int margin: Foundations.spacing.s
+    property var selectedAction: null
 
     bottomMargin: margin
     highlightMoveDuration: Foundations.duration.standard
     highlightResizeDuration: Foundations.duration.zero
     implicitHeight: (itemHeight + margin) * Math.min(maxShown, count)
     orientation: Qt.Vertical
+
     state: {
         const text = search.text;
         const actionsPrefix = ">";
         const commandsPrefix = "!";
         const sessionCommandsPrefix = "#";
-        
+
         if (text.startsWith(actionsPrefix)) {
-            for (const action of ["calc"])
-                if (text.startsWith(`${actionsPrefix}${action} `))
-                    return action;
+            const interactiveCommands = ConfigsJson.interactiveCommands;
+            for (const cmd of interactiveCommands) {
+                if (text.startsWith(`${actionsPrefix}${cmd.key} `)) {
+                    root.selectedAction = cmd;
+                    return "interactive";
+                }
+            }
 
             return "actions";
         }
-        
+
         if (text.startsWith(commandsPrefix)) {
             return "commands";
         }
-        
+
         if (text.startsWith(sessionCommandsPrefix)) {
             return "sessionCommands";
         }
@@ -106,7 +116,7 @@ ListView {
             name: "apps"
 
             PropertyChanges {
-                model.values: LauncheServices.Apps.search(search.text)
+                model.values: LauncherServices.Apps.search(search.text)
                 root.delegate: appItem
             }
         },
@@ -114,7 +124,7 @@ ListView {
             name: "actions"
 
             PropertyChanges {
-                model.values: LauncheServices.Actions.search(search.text)
+                model.values: root.actionsLauncher.search(search.text)
                 root.delegate: actionItem
             }
         },
@@ -135,11 +145,11 @@ ListView {
             }
         },
         State {
-            name: "calc"
+            name: "interactive"
 
             PropertyChanges {
                 model.values: [0]
-                root.delegate: calcItem
+                root.delegate: interactiveItem
             }
         }
     ]
@@ -205,10 +215,11 @@ ListView {
         }
     }
     Component {
-        id: calcItem
+        id: interactiveItem
 
-        CalcItem {
+        GenericInteractiveItem {
             list: root
+            config: root.selectedAction
         }
     }
 

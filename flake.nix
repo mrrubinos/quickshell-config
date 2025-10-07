@@ -90,6 +90,7 @@
             {
               commandsPath ? null,
               sessionCommandsPath ? null,
+              interactiveCommandsPath ? null,
               stylix ? null,
               excludedAppsPath ? null,
             }:
@@ -134,6 +135,11 @@
                   cp ${sessionCommandsPath} $out/share/quickshell-config/session-commands.json
                 ''}
 
+                # Copy interactive-commands.json if provided
+                ${pkgs.lib.optionalString (interactiveCommandsPath != null) ''
+                  cp ${interactiveCommandsPath} $out/share/quickshell-config/interactive-commands.json
+                ''}
+
                 # Copy excluded-apps.json if provided
                 ${pkgs.lib.optionalString (excludedAppsPath != null) ''
                   cp ${excludedAppsPath} $out/share/quickshell-config/excluded-apps.json
@@ -164,6 +170,7 @@
             {
               commandsPath ? null,
               sessionCommandsPath ? null,
+              interactiveCommandsPath ? null,
               stylix ? null,
               excludedAppsPath ? null,
             }:
@@ -171,6 +178,7 @@
               inherit
                 commandsPath
                 sessionCommandsPath
+                interactiveCommandsPath
                 stylix
                 excludedAppsPath
                 ;
