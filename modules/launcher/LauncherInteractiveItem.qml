@@ -63,18 +63,24 @@ LauncherItem {
         }
     }
 
+    height: Math.max(root.list.itemHeight, contentItem.implicitHeight)
+
     RowLayout {
-        anchors.fill: parent
+        id: contentItem
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
         spacing: Foundations.spacing.m
 
         DsText.BodyM {
             id: result
 
-            Layout.alignment: Qt.AlignVCenter
             Layout.fillWidth: true
             color: root.resultColor
             text: root.resultText
-            verticalAlignment: Text.AlignVCenter
+            wrapMode: Text.Wrap
+            maximumLineCount: 10
         }
         DsButtons.HintButton {
             id: hintButton

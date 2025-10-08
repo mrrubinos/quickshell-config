@@ -25,6 +25,19 @@
       "placeholderText": "Type text to encode in base64",
       "openCommand": "",
       "activateCommand": "echo -n '{input}' | base64"
+    },
+    {
+      "name": "Bash Command",
+      "key": ">",
+      "commandPrefix": ">> ",
+      "fontIcon": "terminal",
+      "subtitle": "Execute bash command and copy output",
+      "processCommand": ["sh", "-c", "eval \"$0\" 2>&1 | head -n 10"],
+      "hintIcon": "terminal",
+      "hintText": "Open in terminal",
+      "placeholderText": "Type a bash command to execute",
+      "openCommand": "alacritty -e sh -c '{input}; read -p \"\n\n...Press enter to close...\"'",
+      "activateCommand": "{input}"
     }
   ]
 }

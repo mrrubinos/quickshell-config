@@ -30,7 +30,7 @@ LauncherInteractiveItem {
     onHintClicked: function () {
         if (root.config.openCommand && root.config.openCommand !== "") {
             const cmd = root.config.openCommand.replace('{input}', root.input);
-            Niri.spawn(cmd);
+            Quickshell.execDetached(["sh", "-c", cmd]);
         } else {
             // Fallback: copy result to clipboard
             const cmd = root.config.activateCommand.replace('{input}', root.input);
