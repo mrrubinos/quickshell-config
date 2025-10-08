@@ -125,30 +125,73 @@
                     ''
                 }
 
-                # Copy commands.json if provided
-                ${pkgs.lib.optionalString (commandsPath != null) ''
-                  cp ${commandsPath} $out/share/quickshell-config/commands.json
-                ''}
+                # Copy JSON files (use provided paths or default from source)
+                ${
+                  if commandsPath != null then
+                    ''cp ${commandsPath} $out/share/quickshell-config/commands.json''
+                  else
+                    ''
+                      if [ -f commands.json ]; then
+                        cp commands.json $out/share/quickshell-config/commands.json
+                      else
+                        echo '{"commands":[]}' > $out/share/quickshell-config/commands.json
+                      fi
+                    ''
+                }
 
-                # Copy session-commands.json if provided
-                ${pkgs.lib.optionalString (sessionCommandsPath != null) ''
-                  cp ${sessionCommandsPath} $out/share/quickshell-config/session-commands.json
-                ''}
+                ${
+                  if sessionCommandsPath != null then
+                    ''cp ${sessionCommandsPath} $out/share/quickshell-config/session-commands.json''
+                  else
+                    ''
+                      if [ -f session-commands.json ]; then
+                        cp session-commands.json $out/share/quickshell-config/session-commands.json
+                      else
+                        echo '{"commands":[]}' > $out/share/quickshell-config/session-commands.json
+                      fi
+                    ''
+                }
 
-                # Copy interactive-commands.json if provided
-                ${pkgs.lib.optionalString (interactiveCommandsPath != null) ''
-                  cp ${interactiveCommandsPath} $out/share/quickshell-config/interactive-commands.json
-                ''}
+                ${
+                  if interactiveCommandsPath != null then
+                    ''cp ${interactiveCommandsPath} $out/share/quickshell-config/interactive-commands.json''
+                  else
+                    ''
+                      if [ -f interactive-commands.json ]; then
+                        cp interactive-commands.json $out/share/quickshell-config/interactive-commands.json
+                      else
+                        echo '{"commands":[]}' > $out/share/quickshell-config/interactive-commands.json
+                      fi
+                    ''
+                }
 
-                # Copy excluded-apps.json if provided
-                ${pkgs.lib.optionalString (excludedAppsPath != null) ''
-                  cp ${excludedAppsPath} $out/share/quickshell-config/excluded-apps.json
-                ''}
+                ${
+                  if excludedAppsPath != null then
+                    ''cp ${excludedAppsPath} $out/share/quickshell-config/excluded-apps.json''
+                  else
+                    ''
+                      if [ -f excluded-apps.json ]; then
+                        cp excluded-apps.json $out/share/quickshell-config/excluded-apps.json
+                      else
+                        echo '{"excludedApps":[]}' > $out/share/quickshell-config/excluded-apps.json
+                      fi
+                    ''
+                }
 
-                # Create wrapper script
+                # Create wrapper scripts
                 mkdir -p $out/bin
+
+                # Main quickshell wrapper
                 makeWrapper ${quickshellPkg}/bin/quickshell $out/bin/quickshell-config \
-                  --prefix QML2_IMPORT_PATH : "${quickshellPkg}/lib/qt-6/qml"
+                  --prefix QML2_IMPORT_PATH : "${quickshellPkg}/lib/qt-6/qml" \
+                  --add-flags "-c $out/share/quickshell-config"
+
+                # Launcher toggle script
+                cat > $out/bin/qs-toggle-launcher << EOF
+                #!/usr/bin/env bash
+                ${quickshellPkg}/bin/quickshell -c $out/share/quickshell-config ipc call drawers toggle launcher
+                EOF
+                chmod +x $out/bin/qs-toggle-launcher
               '';
 
               meta = with pkgs.lib; {
