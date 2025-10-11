@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.services
 import qs.ds
 import qs.modules.popups as BarPopouts
-import qs.modules.bar.components
+import "components"
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -44,8 +44,16 @@ Item {
                 popouts.currentCenter = Qt.binding(() => trayItem.mapToItem(root, trayItem.implicitWidth / 2, 0).x);
                 popouts.hasCurrent = true;
             }
+        } else if (id === "mediaPlayer") {
+            popouts.currentName = "mediaplayer";
+            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+            popouts.hasCurrent = true;
         } else if (id === "resources") {
             popouts.currentName = "systemtray";
+            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+            popouts.hasCurrent = true;
+        } else if (id === "weather") {
+            popouts.currentName = "weather";
             popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
             popouts.hasCurrent = true;
         } else if (id === "date") {
@@ -54,6 +62,15 @@ Item {
                 popouts.currentName = "";
             } else {
                 popouts.currentName = "calendar";
+                popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+                popouts.hasCurrent = true;
+            }
+        } else if (id === "power") {
+            if (popouts.currentName === "session" && popouts.hasCurrent) {
+                popouts.hasCurrent = false;
+                popouts.currentName = "";
+            } else {
+                popouts.currentName = "session";
                 popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
                 popouts.hasCurrent = true;
             }
@@ -103,9 +120,23 @@ Item {
             }
         }
         WrappedLoader {
+            id: mediaPlayer
+
+            sourceComponent: MediaPlayer {
+                height: root.innerHeight
+            }
+        }
+        WrappedLoader {
             id: resources
 
             sourceComponent: SystemTray {
+                height: root.innerHeight
+            }
+        }
+        WrappedLoader {
+            id: weather
+
+            sourceComponent: Weather {
                 height: root.innerHeight
             }
         }
@@ -141,13 +172,12 @@ Item {
         WrappedLoader {
             id: notificationToggle
 
-            Layout.rightMargin: root.hPadding
-
             sourceComponent: NotificationListToggle {
                 visibilities: root.visibilities
             }
         }
     }
+
     component WrappedLoader: Loader {
         property string id
 
