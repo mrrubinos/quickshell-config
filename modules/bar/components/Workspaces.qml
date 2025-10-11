@@ -140,7 +140,7 @@ Item {
                     if (model.isFocused)
                         return activeColor;
 
-                    return Foundations.palette.base02;
+                    return Foundations.palette.base04;
                 }
                 height: 12
                 radius: 6
