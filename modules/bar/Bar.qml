@@ -48,12 +48,12 @@ Item {
             popouts.currentName = "mediaplayer";
             popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
             popouts.hasCurrent = true;
-        } else if (id === "resources") {
-            popouts.currentName = "systemtray";
-            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
-            popouts.hasCurrent = true;
         } else if (id === "weather") {
             popouts.currentName = "weather";
+            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+            popouts.hasCurrent = true;
+        } else if (id === "resources") {
+            popouts.currentName = "systemtray";
             popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
             popouts.hasCurrent = true;
         } else if (id === "date") {
@@ -127,16 +127,16 @@ Item {
             }
         }
         WrappedLoader {
-            id: resources
+            id: weather
 
-            sourceComponent: SystemTray {
+            sourceComponent: Weather {
                 height: root.innerHeight
             }
         }
         WrappedLoader {
-            id: weather
+            id: resources
 
-            sourceComponent: Weather {
+            sourceComponent: SystemTray {
                 height: root.innerHeight
             }
         }
@@ -151,6 +151,8 @@ Item {
             id: date
 
             sourceComponent: Date {
+                height: root.innerHeight
+
                 onClicked: {
                     if (popouts.currentName === "calendar" && popouts.hasCurrent) {
                         popouts.hasCurrent = false;

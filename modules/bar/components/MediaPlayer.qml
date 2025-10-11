@@ -15,6 +15,7 @@ Rectangle {
     id: root
 
     property color colour: Foundations.palette.base05
+    property int margin: Foundations.spacing.s
     property int spacingItems: Foundations.spacing.xs
     property int iconSize: Foundations.font.size.m
 
@@ -43,9 +44,11 @@ Rectangle {
         return null;
     }
 
-    color: "transparent"
+    clip: true
+    color: Foundations.palette.base02
     implicitHeight: height
-    implicitWidth: activePlayer !== null ? mainLayout.implicitWidth : 0
+    implicitWidth: activePlayer !== null ? mainLayout.implicitWidth + margin * 2 : 0
+    radius: Foundations.radius.all
     visible: activePlayer !== null
 
     Behavior on implicitWidth {
@@ -57,9 +60,7 @@ Rectangle {
     RowLayout {
         id: mainLayout
 
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.horizontalCenter: parent.horizontalCenter
-        height: parent.height
+        anchors.centerIn: parent
         spacing: root.spacingItems
 
         // Previous button

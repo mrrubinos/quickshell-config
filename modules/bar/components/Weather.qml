@@ -14,11 +14,14 @@ Rectangle {
     id: root
 
     property color colour: Foundations.palette.base05
+    property int margin: Foundations.spacing.s
     property int spacingItems: Foundations.spacing.xs
 
-    color: "transparent"
-    implicitWidth: weatherLayout.implicitWidth
-    implicitHeight: weatherLayout.implicitHeight
+    clip: true
+    color: Foundations.palette.base02
+    implicitWidth: weatherLayout.implicitWidth + margin * 2
+    implicitHeight: height
+    radius: Foundations.radius.all
 
     Behavior on implicitWidth {
         BasicNumberAnimation {
