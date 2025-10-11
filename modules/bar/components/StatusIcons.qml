@@ -69,7 +69,7 @@ Rectangle {
                     iconPointSize: Foundations.font.size.m
 
                     onClicked: {
-                        Quickshell.execDetached(["pavucontrol"]);
+                        Quickshell.execDetached(["pwvucontrol"]);
                     }
                 }
             }
