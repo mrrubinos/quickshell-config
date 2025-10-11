@@ -48,6 +48,15 @@ Item {
             popouts.currentName = "systemtray";
             popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
             popouts.hasCurrent = true;
+        } else if (id === "date") {
+            if (popouts.currentName === "calendar" && popouts.hasCurrent) {
+                popouts.hasCurrent = false;
+                popouts.currentName = "";
+            } else {
+                popouts.currentName = "calendar";
+                popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+                popouts.hasCurrent = true;
+            }
         } else {
             popouts.hasCurrent = false;
         }
@@ -108,6 +117,22 @@ Item {
             }
         }
         WrappedLoader {
+            id: date
+
+            sourceComponent: Date {
+                onClicked: {
+                    if (popouts.currentName === "calendar" && popouts.hasCurrent) {
+                        popouts.hasCurrent = false;
+                        popouts.currentName = "";
+                    } else {
+                        popouts.currentName = "calendar";
+                        popouts.currentCenter = Qt.binding(() => date.mapToItem(root, date.width / 2, 0).x);
+                        popouts.hasCurrent = true;
+                    }
+                }
+            }
+        }
+        WrappedLoader {
             id: idleInhibitor
 
             sourceComponent: IdleInhibitor {
@@ -123,27 +148,6 @@ Item {
             }
         }
     }
-    WrappedLoader {
-        id: date
-
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
-        z: 10
-
-        sourceComponent: Date {
-            onClicked: {
-                if (popouts.currentName === "calendar" && popouts.hasCurrent) {
-                    popouts.hasCurrent = false;
-                    popouts.currentName = "";
-                } else {
-                    popouts.currentName = "calendar";
-                    popouts.currentCenter = Qt.binding(() => date.mapToItem(root, date.width / 2, 0).x);
-                    popouts.hasCurrent = true;
-                }
-            }
-        }
-    }
-
     component WrappedLoader: Loader {
         property string id
 
