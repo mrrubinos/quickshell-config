@@ -12,7 +12,7 @@ import qs.ds.animations
 Rectangle {
     id: root
 
-    property color colour: Foundations.palette.base0D
+    property color colour: Foundations.palette.base05
 
     // ToDo: Review (maybe review all margin/paddings)
     property int margin: Foundations.spacing.s
@@ -45,21 +45,21 @@ Rectangle {
 
         // CPU usage
         ResourceItem {
-            colour: SystemUsage.cpuPerc > 0.8 ? Foundations.palette.base09 : Foundations.palette.base0D
+            colour: SystemUsage.cpuPerc > 0.8 ? Foundations.palette.base09 : Foundations.palette.base05
             icon: "speed"
             value: SystemUsage.cpuPerc
         }
 
         // Memory usage
         ResourceItem {
-            colour: SystemUsage.memPerc > 0.8 ? Foundations.palette.base09 : Foundations.palette.base0D
+            colour: SystemUsage.memPerc > 0.8 ? Foundations.palette.base09 : Foundations.palette.base05
             icon: "memory"
             value: SystemUsage.memPerc
         }
 
         // Disk storage - showing usage percentage
         ResourceItem {
-            colour: SystemUsage.storagePerc > 0.8 ? Foundations.palette.base08 : Foundations.palette.base0D
+            colour: SystemUsage.storagePerc > 0.8 ? Foundations.palette.base08 : Foundations.palette.base05
             icon: "storage"
             value: SystemUsage.storagePerc
         }
@@ -70,7 +70,7 @@ Rectangle {
                 const temp = SystemUsage.cpuTemp;
                 if (temp > 80) return Foundations.palette.base08;
                 if (temp > 65) return Foundations.palette.base09;
-                return Foundations.palette.base0D;
+                return Foundations.palette.base05;
             }
             icon: "thermostat"
             value: SystemUsage.cpuTemp
@@ -84,7 +84,7 @@ Rectangle {
         required property real value
         property bool isPercent: true
 
-        spacing: Foundations.spacing.xxxs
+        spacing: Foundations.spacing.s
 
         Behavior on value {
             BasicNumberAnimation { }
@@ -92,7 +92,7 @@ Rectangle {
 
         Icons.MaterialFontIcon {
             color: parent.colour
-            font.pointSize: Foundations.font.size.xs
+            font.pointSize: Foundations.font.size.m
             text: parent.icon
         }
 

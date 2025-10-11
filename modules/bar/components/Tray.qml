@@ -1,6 +1,8 @@
 import qs.services
 import qs.ds
+import qs.ds.icons as Icons
 import Quickshell.Services.SystemTray
+import Quickshell.Widgets
 import QtQuick
 import qs.ds.animations
 import qs.ds.buttons
@@ -13,7 +15,8 @@ Rectangle {
     // ToDo: Reviow (maybe review all margin/paddings)
     property int margin: Foundations.spacing.xxs
     property int spacingItems: Foundations.spacing.xs
-    property int buttonSize: Foundations.font.size.xl
+    property int buttonSize: height - margin * 2  // Match bar height
+    property int iconSize: Foundations.font.size.m  // Match other shell icons
 
     clip: true
     color: "transparent"
@@ -55,31 +58,69 @@ Rectangle {
 
             model: SystemTray.items
 
-            IconButton {
-                id: iconButton
+            Rectangle {
+                id: trayItem
 
                 required property SystemTrayItem modelData
 
-                buttonColor: "transparent"
-                buttonSize: root.buttonSize
-                focusColor: "transparent"
-                iconColor: "transparent"
+                color: "transparent"
+                height: root.buttonSize
+                width: root.buttonSize
+                radius: Foundations.radius.l
 
-                // Process the icon to extract the path
-                iconPath: {
-                    let icon = iconButton.modelData.icon;
-                    if (icon.includes("?path=")) {
-                        const [name, path] = icon.split("?path=");
-                        return `file://${path}/${name.slice(name.lastIndexOf("/") + 1)}`;
+                InteractiveArea {
+                    function onClicked(): void {
+                        trayItem.modelData.activate();
                     }
-                    return icon;
+                    function onEntered(): void {
+                        trayItem.modelData.secondaryActivate();
+                    }
+
+                    radius: parent.radius
                 }
 
-                onClicked: {
-                    iconButton.modelData.activate();
-                }
-                onHovered: {
-                    iconButton.modelData.secondaryActivate();
+                Loader {
+                    anchors.centerIn: parent
+
+                    sourceComponent: {
+                        const title = trayItem.modelData.title?.toLowerCase() || "";
+                        const id = trayItem.modelData.id?.toLowerCase() || "";
+                        const iconName = trayItem.modelData.icon?.toLowerCase() || "";
+
+                        // Check if it's Insync
+                        if (title.includes("insync") || id.includes("insync") || iconName.includes("insync")) {
+                            return googleDriveIcon;
+                        }
+                        return defaultIcon;
+                    }
+
+                    Component {
+                        id: googleDriveIcon
+
+                        Icons.MaterialFontIcon {
+                            color: Foundations.palette.base05
+                            font.pointSize: root.iconSize  // Use consistent icon size
+                            text: "add_to_drive"  // Material Design Google Drive icon
+                        }
+                    }
+
+                    Component {
+                        id: defaultIcon
+
+                        IconImage {
+                            asynchronous: true
+                            height: root.iconSize
+                            width: root.iconSize
+                            source: {
+                                let icon = trayItem.modelData.icon;
+                                if (icon.includes("?path=")) {
+                                    const [name, path] = icon.split("?path=");
+                                    return `file://${path}/${name.slice(name.lastIndexOf("/") + 1)}`;
+                                }
+                                return icon;
+                            }
+                        }
+                    }
                 }
             }
         }

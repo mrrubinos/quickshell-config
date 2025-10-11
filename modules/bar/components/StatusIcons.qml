@@ -16,7 +16,7 @@ import qs.ds.animations
 Rectangle {
     id: root
 
-    property color colour: Foundations.palette.base0D
+    property color colour: Foundations.palette.base05
     readonly property alias items: iconRow
     readonly property int margin: Foundations.spacing.s
     readonly property int iconSpacing: Foundations.spacing.xxs
@@ -69,7 +69,7 @@ Rectangle {
                     iconPointSize: Foundations.font.size.m
 
                     onClicked: {
-                        Quickshell.execDetached(["pavucontrol"]);
+                        Quickshell.execDetached(["pwvucontrol"]);
                     }
                 }
             }
@@ -155,7 +155,7 @@ Rectangle {
                     width: 6
                     height: 6
                     radius: 3
-                    color: Foundations.palette.base0D
+                    color: Foundations.palette.base05
                     visible: VPN.connecting
 
                     SequentialAnimation on scale {

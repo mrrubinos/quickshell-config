@@ -9,9 +9,9 @@ Switch {
     property color activeBorderColor: activeColor
     property color activeColor: Foundations.palette.base05
     property color activeThumbColor: Foundations.palette.base03
-    property color inactiveBorderColor: Foundations.palette.base0D
+    property color inactiveBorderColor: Foundations.palette.base05
     property color inactiveColor: Foundations.palette.base04
-    property color inactiveThumbColor: Foundations.palette.base0D
+    property color inactiveThumbColor: Foundations.palette.base05
 
     implicitHeight: 25
     implicitWidth: 41

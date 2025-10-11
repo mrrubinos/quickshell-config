@@ -67,6 +67,14 @@ Item {
             name: "systemtray"
             source: "Performance.qml"
         }
+        Popout {
+            name: "mediaplayer"
+            source: "MediaPlayer.qml"
+        }
+        Popout {
+            name: "weather"
+            source: "Weather.qml"
+        }
         Repeater {
             model: ScriptModel {
                 values: [...SystemTray.items.values]

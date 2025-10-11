@@ -7,11 +7,11 @@ TextField {
     id: root
 
     property color backgroundColor: "transparent"
-    property color borderColor: Foundations.palette.base0D
+    property color borderColor: Foundations.palette.base05
     property real borderWidth: 1
     property color cursorColor: Foundations.palette.base05
     property color focusBorderColor: Foundations.palette.base05
-    property color placeholderColor: Foundations.palette.base0D
+    property color placeholderColor: Foundations.palette.base05
     property color textColor: Foundations.palette.base07
 
     bottomPadding: Foundations.spacing.s

@@ -7,7 +7,7 @@ import qs.services
 ScrollBar {
     id: root
 
-    property color scrollbarColor: Foundations.palette.base0D
+    property color scrollbarColor: Foundations.palette.base05
 
     bottomPadding: Foundations.spacing.m
     topPadding: Foundations.spacing.m

@@ -3,7 +3,7 @@ pragma ComponentBehavior: Bound
 import qs.services
 import qs.ds
 import qs.modules.popups as BarPopouts
-import qs.modules.bar.components
+import "components"
 import Quickshell
 import QtQuick
 import QtQuick.Layouts
@@ -44,10 +44,30 @@ Item {
                 popouts.currentCenter = Qt.binding(() => trayItem.mapToItem(root, trayItem.implicitWidth / 2, 0).x);
                 popouts.hasCurrent = true;
             }
+        } else if (id === "mediaPlayer") {
+            popouts.currentName = "mediaplayer";
+            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+            popouts.hasCurrent = true;
+        } else if (id === "weather") {
+            popouts.currentName = "weather";
+            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+            popouts.hasCurrent = true;
         } else if (id === "resources") {
             popouts.currentName = "systemtray";
             popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
             popouts.hasCurrent = true;
+        } else if (id === "date") {
+            // Date calendar is only shown on click, not hover
+            // Skip hover handling for date component
+        } else if (id === "power") {
+            if (popouts.currentName === "session" && popouts.hasCurrent) {
+                popouts.hasCurrent = false;
+                popouts.currentName = "";
+            } else {
+                popouts.currentName = "session";
+                popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+                popouts.hasCurrent = true;
+            }
         } else {
             popouts.hasCurrent = false;
         }
@@ -94,6 +114,20 @@ Item {
             }
         }
         WrappedLoader {
+            id: mediaPlayer
+
+            sourceComponent: MediaPlayer {
+                height: root.innerHeight
+            }
+        }
+        WrappedLoader {
+            id: weather
+
+            sourceComponent: Weather {
+                height: root.innerHeight
+            }
+        }
+        WrappedLoader {
             id: resources
 
             sourceComponent: SystemTray {
@@ -105,6 +139,24 @@ Item {
 
             sourceComponent: StatusIcons {
                 height: root.innerHeight
+            }
+        }
+        WrappedLoader {
+            id: date
+
+            sourceComponent: Date {
+                height: root.innerHeight
+
+                onClicked: {
+                    if (popouts.currentName === "calendar" && popouts.hasCurrent) {
+                        popouts.hasCurrent = false;
+                        popouts.currentName = "";
+                    } else {
+                        popouts.currentName = "calendar";
+                        popouts.currentCenter = Qt.binding(() => date.mapToItem(root, date.width / 2, 0).x);
+                        popouts.hasCurrent = true;
+                    }
+                }
             }
         }
         WrappedLoader {
@@ -120,26 +172,6 @@ Item {
 
             sourceComponent: NotificationListToggle {
                 visibilities: root.visibilities
-            }
-        }
-    }
-    WrappedLoader {
-        id: date
-
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter
-        z: 10
-
-        sourceComponent: Date {
-            onClicked: {
-                if (popouts.currentName === "calendar" && popouts.hasCurrent) {
-                    popouts.hasCurrent = false;
-                    popouts.currentName = "";
-                } else {
-                    popouts.currentName = "calendar";
-                    popouts.currentCenter = Qt.binding(() => date.mapToItem(root, date.width / 2, 0).x);
-                    popouts.hasCurrent = true;
-                }
             }
         }
     }
