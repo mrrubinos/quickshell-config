@@ -8,7 +8,7 @@ import qs.ds
 Item {
     id: root
 
-    property color activeColor: Foundations.palette.base0D
+    property color activeColor: Foundations.palette.base05
     property bool effectsActive: false
     property int horizontalPadding: 8
     property bool hovered: false

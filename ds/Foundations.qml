@@ -19,22 +19,22 @@ Singleton {
     }
 
     component ColorBase16: QtObject {
-        property color base00: "#303446";
-        property color base01: "#292c3c";
-        property color base02: "#414559";
-        property color base03: "#51576d";
-        property color base04: "#626880";
-        property color base05: "#c6d0f5";
-        property color base06: "#f2d5cf";
-        property color base07: "#babbf1";
-        property color base08: "#e78284";
-        property color base09: "#ef9f76";
-        property color base0A: "#e5c890";
-        property color base0B: "#a6d189";
-        property color base0C: "#81c0c8";
-        property color base0D: "#8caaee";
-        property color base0E: "#a57fbd";
-        property color base0F: "#ca9ee6";
+        property color base00: "#000000";  // Black background
+        property color base01: "#1a1a1a";  // Dark background
+        property color base02: "#2a2a2a";  // Selection background
+        property color base03: "#3a3a3a";  // Comments, invisibles
+        property color base04: "#4a4a4a";  // Dark foreground
+        property color base05: "#d8d8d8";  // Default foreground
+        property color base06: "#e8e8e8";  // Light foreground
+        property color base07: "#f8f8f8";  // Light background
+        property color base08: "#ee2e24";  // Red (critical/urgent)
+        property color base09: "#ef9f76";  // Orange (warning)
+        property color base0A: "#ffd204";  // Yellow
+        property color base0B: "#a6d189";  // Green
+        property color base0C: "#81c0c8";  // Cyan
+        property color base0D: "#8caaee";  // Blue
+        property color base0E: "#a57fbd";  // Purple
+        property color base0F: "#efefef";  // White/border color
     }
 
     component Duration: QtObject {

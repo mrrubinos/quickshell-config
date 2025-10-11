@@ -95,7 +95,7 @@ Column {
                     id: text
 
                     anchors.centerIn: parent
-                    color: day.model.today ? Foundations.palette.base03 : day.model.month === grid.month ? Foundations.palette.base04 : Foundations.palette.base0D
+                    color: day.model.today ? Foundations.palette.base03 : day.model.month === grid.month ? Foundations.palette.base04 : Foundations.palette.base05
                     horizontalAlignment: Text.AlignHCenter
                     text: Qt.formatDate(day.model.date, "d")
                 }

@@ -9,7 +9,7 @@ CircularButtons.S {
 
     active: IdleInhibitor.enabled
     backgroundColor: IdleInhibitor.enabled ? Foundations.palette.base00 : "transparent"
-    foregroundColor: IdleInhibitor.enabled ? Foundations.palette.base00 : Foundations.palette.base0D
+    foregroundColor: IdleInhibitor.enabled ? Foundations.palette.base00 : Foundations.palette.base05
     icon: "coffee"
 
     onClicked: {

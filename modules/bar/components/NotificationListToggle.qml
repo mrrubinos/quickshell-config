@@ -13,7 +13,7 @@ CircularButtons.S {
     icon: "notifications"
 
     backgroundColor: enabled ? Foundations.palette.base00 : "transparent"
-    foregroundColor: enabled ? Foundations.palette.base00 : Foundations.palette.base0D
+    foregroundColor: enabled ? Foundations.palette.base00 : Foundations.palette.base05
 
     active: enabled
 
