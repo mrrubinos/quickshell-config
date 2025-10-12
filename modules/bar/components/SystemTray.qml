@@ -96,7 +96,7 @@ Rectangle {
             text: parent.icon
         }
 
-        Text.BodyS {
+        Text.BodyM {
             color: parent.colour
             text: isPercent ? Math.round(parent.value * 100) + "%" : Math.round(parent.value) + "°C"
         }
