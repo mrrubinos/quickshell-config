@@ -92,7 +92,7 @@ Rectangle {
 
         Icons.MaterialFontIcon {
             color: parent.colour
-            font.pointSize: Foundations.font.size.m
+            font.pointSize: Foundations.font.size.l
             text: parent.icon
         }
 
