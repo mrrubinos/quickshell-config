@@ -26,7 +26,17 @@ ListView {
         prefix: ">"
         commandList: ConfigsJson.interactiveCommands
     }
-    required property TextField search
+
+    property LauncherServices.Emojis emojisLauncher: LauncherServices.Emojis {
+        prefix: ":"
+        emojiList: ConfigsJson.emojis
+    }
+
+    property LauncherServices.Pass passLauncher: LauncherServices.Pass {
+        prefix: "?"
+    }
+
+    required property string searchText
     required property PersistentProperties visibilities
 
     // ToDo: review
@@ -47,10 +57,12 @@ ListView {
     orientation: Qt.Vertical
 
     state: {
-        const text = search.text;
+        const text = searchText;
         const actionsPrefix = ">";
         const commandsPrefix = "!";
         const sessionCommandsPrefix = "#";
+        const emojisPrefix = ":";
+        const passPrefix = "?";
 
         if (text.startsWith(actionsPrefix)) {
             const interactiveCommands = ConfigsJson.interactiveCommands;
@@ -70,6 +82,14 @@ ListView {
 
         if (text.startsWith(sessionCommandsPrefix)) {
             return "sessionCommands";
+        }
+
+        if (text.startsWith(emojisPrefix)) {
+            return "emojis";
+        }
+
+        if (text.startsWith(passPrefix)) {
+            return "pass";
         }
 
         return "apps";
@@ -121,7 +141,7 @@ ListView {
             name: "apps"
 
             PropertyChanges {
-                model.values: LauncherServices.Apps.search(search.text)
+                model.values: LauncherServices.Apps.search(root.searchText)
                 root.delegate: appItem
             }
         },
@@ -129,7 +149,7 @@ ListView {
             name: "actions"
 
             PropertyChanges {
-                model.values: root.actionsLauncher.search(search.text)
+                model.values: root.actionsLauncher.search(root.searchText)
                 root.delegate: actionItem
             }
         },
@@ -137,7 +157,7 @@ ListView {
             name: "commands"
 
             PropertyChanges {
-                model.values: root.commandsLauncher.search(search.text)
+                model.values: root.commandsLauncher.search(root.searchText)
                 root.delegate: actionItem
             }
         },
@@ -145,7 +165,23 @@ ListView {
             name: "sessionCommands"
 
             PropertyChanges {
-                model.values: root.sessionCommandsLauncher.search(search.text)
+                model.values: root.sessionCommandsLauncher.search(root.searchText)
+                root.delegate: actionItem
+            }
+        },
+        State {
+            name: "emojis"
+
+            PropertyChanges {
+                model.values: root.emojisLauncher.search(root.searchText)
+                root.delegate: actionItem
+            }
+        },
+        State {
+            name: "pass"
+
+            PropertyChanges {
+                model.values: root.passLauncher.search(root.searchText)
                 root.delegate: actionItem
             }
         },

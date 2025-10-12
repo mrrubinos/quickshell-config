@@ -109,7 +109,7 @@
               installPhase = ''
                 # Copy all configuration files
                 mkdir -p $out/share/quickshell-config
-                cp -r ds modules services shell $out/share/quickshell-config/ 2>/dev/null || true
+                cp -r ds modules services shell data $out/share/quickshell-config/ 2>/dev/null || true
                 cp shell.qml $out/share/quickshell-config/
 
                 # Process Foundations.qml with Stylix replacement if available
