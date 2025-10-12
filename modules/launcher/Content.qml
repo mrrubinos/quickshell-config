@@ -79,7 +79,7 @@ Item {
             backgroundColor: "transparent"
             borderWidth: 0
             bottomPadding: root.innerMargin
-            placeholderText: "Type \">\" for commands"
+            placeholderText: "Type >:?!# for commands/emojis(2+ chars)/pass/shell/session"
             topPadding: root.innerMargin
 
             Keys.onDownPressed: list.currentList?.incrementCurrentIndex()

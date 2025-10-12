@@ -26,6 +26,16 @@ ListView {
         prefix: ">"
         commandList: ConfigsJson.interactiveCommands
     }
+
+    property LauncherServices.Emojis emojisLauncher: LauncherServices.Emojis {
+        prefix: ":"
+        emojiList: ConfigsJson.emojis
+    }
+
+    property LauncherServices.Pass passLauncher: LauncherServices.Pass {
+        prefix: "?"
+    }
+
     required property TextField search
     required property PersistentProperties visibilities
 
@@ -51,6 +61,8 @@ ListView {
         const actionsPrefix = ">";
         const commandsPrefix = "!";
         const sessionCommandsPrefix = "#";
+        const emojisPrefix = ":";
+        const passPrefix = "?";
 
         if (text.startsWith(actionsPrefix)) {
             const interactiveCommands = ConfigsJson.interactiveCommands;
@@ -70,6 +82,14 @@ ListView {
 
         if (text.startsWith(sessionCommandsPrefix)) {
             return "sessionCommands";
+        }
+
+        if (text.startsWith(emojisPrefix)) {
+            return "emojis";
+        }
+
+        if (text.startsWith(passPrefix)) {
+            return "pass";
         }
 
         return "apps";
@@ -146,6 +166,22 @@ ListView {
 
             PropertyChanges {
                 model.values: root.sessionCommandsLauncher.search(search.text)
+                root.delegate: actionItem
+            }
+        },
+        State {
+            name: "emojis"
+
+            PropertyChanges {
+                model.values: root.emojisLauncher.search(search.text)
+                root.delegate: actionItem
+            }
+        },
+        State {
+            name: "pass"
+
+            PropertyChanges {
+                model.values: root.passLauncher.search(search.text)
                 root.delegate: actionItem
             }
         },

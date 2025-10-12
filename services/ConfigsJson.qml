@@ -11,6 +11,7 @@ Singleton {
     property alias sessionCommands: sessionCommandsAdapter.commands
     property alias interactiveCommands: interactiveCommandsAdapter.commands
     property alias excludedDesktops: excludedDesktopsAdapter.excludedApps
+    property alias emojis: emojisAdapter.emojis
 
     property FileView commandsFile: FileView {
         path: `${Quickshell.shellDir}/commands.json`
@@ -54,6 +55,17 @@ Singleton {
             id: excludedDesktopsAdapter
 
             property var excludedApps: []
+        }
+    }
+
+    property FileView emojisFile: FileView {
+        path: `${Quickshell.shellDir}/data/emojis.json`
+        watchChanges: true
+
+        JsonAdapter {
+            id: emojisAdapter
+
+            property var emojis: []
         }
     }
 }
