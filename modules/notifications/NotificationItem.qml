@@ -38,11 +38,49 @@ Rectangle {
     readonly property string appName: notification.appName ?? ""
     readonly property string body: notification.body ?? ""
 
+    // Helper function to force link colors to match our theme
+    function fixLinkColors(text) {
+        if (!text) return text;
+        const linkColor = Foundations.palette.base06.toString();
+
+        // Replace all anchor tags to inject our color
+        return text.replace(/<a(\s[^>]*)>/gi, (match, attrs) => {
+            // If there's already a style attribute, add color to it
+            if (/style\s*=/i.test(attrs)) {
+                return match.replace(/style\s*=\s*["']([^"']*)["']/i, (m, style) => {
+                    const cleaned = style.replace(/color\s*:\s*[^;]+;?\s*/gi, '');
+                    return `style="${cleaned}${cleaned ? '; ' : ''}color: ${linkColor};"`;
+                });
+            }
+            // Otherwise add a new style attribute
+            return `<a${attrs} style="color: ${linkColor};">`;
+        });
+    }
+
     readonly property bool isCritical: notification.urgency === NotificationUrgency.Critical
     readonly property bool isLow: notification.urgency === NotificationUrgency.Low
 
+    // Find the default action (activate/default) for clicking the notification
+    readonly property var defaultAction: {
+        for (let i = 0; i < notification.actions.length; i++) {
+            const actionText = (notification.actions[i].text ?? "").toLowerCase();
+            if (actionText === "activate" || actionText === "default") {
+                return notification.actions[i];
+            }
+        }
+        return null;
+    }
+
+    // Only show inline-reply actions as buttons
+    readonly property var interactiveActions: notification.actions.filter(action => {
+        const actionText = (action.text ?? "").toLowerCase();
+        return actionText === "inline-reply";
+    })
+
     // anchors.horizontalCenter: pa?ent.horizontalCenter
-    color: root.isCritical ? Foundations.palette.base04 : Foundations.palette.base02
+    color: root.isCritical ? Foundations.palette.base03 : Foundations.palette.base01
+    border.color: Qt.rgba(Foundations.palette.base05.r, Foundations.palette.base05.g, Foundations.palette.base05.b, 0.1)
+    border.width: 1
     implicitHeight: inner.implicitHeight
     implicitWidth: notificationWidth
     radius: borderRadius
@@ -56,15 +94,11 @@ Rectangle {
             if (event.button !== Qt.LeftButton)
                 return;
 
-            switch (root.notification.actions.length) {
-                case 0:
-                    root.notification.dismiss()
-                    return
-                case 1:
-                    root.notification.actions[0].invoke()
-                    return
-                default:
-                    return
+            // Click notification to activate or dismiss
+            if (root.defaultAction) {
+                root.defaultAction.invoke();
+            } else {
+                root.notification.dismiss();
             }
         }
 
@@ -83,7 +117,8 @@ Rectangle {
                 anchors.left: parent.left
                 anchors.top: parent.top
                 maximumLineCount: 1
-                text: root.appName
+                text: root.fixLinkColors(root.appName)
+                textFormat: Text.StyledText
 
                 Behavior on opacity {
                     BasicNumberAnimation {
@@ -97,7 +132,7 @@ Rectangle {
                 anchors.top: parent.top
 
                 icon: "close"
-                visible: root.notification.actions.length > 0
+                visible: root.interactiveActions.length > 0
 
                 onClicked: {
                     root.notification.dismiss()
@@ -186,6 +221,7 @@ Rectangle {
                 height: implicitHeight
                 maximumLineCount: 1
                 text: summaryMetrics.elidedText
+                textFormat: Text.StyledText
             }
             TextMetrics {
                 id: summaryMetrics
@@ -194,7 +230,7 @@ Rectangle {
                 elideWidth: notificationWidth - imageDimension - margin * 3
                 font.family: summaryView.font.family
                 font.pointSize: summaryView.font.pointSize
-                text: root.summary
+                text: root.fixLinkColors(root.summary)
             }
             DsText.BodyS {
                 id: body
@@ -203,10 +239,10 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.rightMargin: margin
                 anchors.top: summaryView.bottom
-                color: Foundations.palette.base04
+                color: Foundations.palette.base05
                 height: implicitHeight
                 opacity: 1
-                text: root.body
+                text: root.fixLinkColors(root.body)
                 textFormat: Text.MarkdownText
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
             }
@@ -220,14 +256,13 @@ Rectangle {
                 spacing: margin
 
                 Repeater {
-                    model: root.notification.actions
+                    model: root.interactiveActions
 
                     ActionButton {
                         required property NotificationAction modelData
 
                         text: qsTr(modelData?.text ?? "")
                         leftIcon: ""
-                        visible: root.notification?.actions?.length > 1
 
                         onClicked: {
                             modelData.invoke()
