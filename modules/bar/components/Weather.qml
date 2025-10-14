@@ -169,4 +169,14 @@ Rectangle {
         }
     }
 
+    // Click to refresh
+    MouseArea {
+        anchors.fill: parent
+        cursorShape: Qt.PointingHandCursor
+
+        onClicked: {
+            Weather.refresh();
+        }
+    }
+
 }

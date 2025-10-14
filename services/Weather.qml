@@ -88,6 +88,24 @@ Singleton {
         onTriggered: root.refresh()
     }
 
+    // Retry timer for errors - retry after 5 minutes if there's an error
+    Timer {
+        id: retryTimer
+        interval: 5 * 60 * 1000 // 5 minutes
+        running: false
+        repeat: false
+        onTriggered: root.refresh()
+    }
+
+    // Watch for errors and start retry timer
+    onErrorMessageChanged: {
+        if (errorMessage && errorMessage.length > 0) {
+            retryTimer.start();
+        } else {
+            retryTimer.stop();
+        }
+    }
+
     // Get location via IP
     Process {
         id: locationProcess

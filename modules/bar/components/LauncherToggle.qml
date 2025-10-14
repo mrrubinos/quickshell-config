@@ -15,7 +15,7 @@ Item {
 
     readonly property bool isExpanded: searchField.activeFocus || root.visibilities.launcher
     readonly property real collapsedWidth: searchIcon.implicitWidth + hintText.implicitWidth + Foundations.spacing.l * 2 + Foundations.spacing.m
-    readonly property real expandedWidth: 700
+    readonly property real expandedWidth: 600
 
     implicitHeight: innerHeight
     implicitWidth: content.implicitWidth
@@ -50,7 +50,7 @@ Item {
             text: "search"
         }
 
-        DsText.BodyM {
+        DsText.BodyS {
             id: hintText
 
             anchors.left: searchIcon.right
