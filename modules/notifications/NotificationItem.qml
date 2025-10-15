@@ -42,7 +42,7 @@ Rectangle {
     readonly property bool isLow: notification.urgency === NotificationUrgency.Low
 
     // anchors.horizontalCenter: pa?ent.horizontalCenter
-    color: root.isCritical ? Foundations.palette.base04 : Foundations.palette.base02
+    color: root.isCritical ? Foundations.palette.base03 : Foundations.palette.base01
     implicitHeight: inner.implicitHeight
     implicitWidth: notificationWidth
     radius: borderRadius
@@ -203,7 +203,7 @@ Rectangle {
                 anchors.right: parent.right
                 anchors.rightMargin: margin
                 anchors.top: summaryView.bottom
-                color: Foundations.palette.base04
+                color: Foundations.palette.base05
                 height: implicitHeight
                 opacity: 1
                 text: root.body
