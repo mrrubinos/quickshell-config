@@ -14,7 +14,15 @@ Singleton {
     readonly property list<Notification> notifications: server.trackedNotifications.values
     property list<Notification> popups: []
 
-    property int defaultExpireTimeout: 5000
+    property int defaultExpireTimeout: 4000
+    property bool doNotDisturb: false
+
+    // Map of notification ID to persisted image path
+    property var persistedImages: ({})
+
+    function getPersistedImage(notificationId: int): string {
+        return root.persistedImages[notificationId] || ""
+    }
 
     function clearNotifications() {
         root.popups = []
@@ -35,10 +43,27 @@ Singleton {
         onNotification: notification => {
             notification.tracked = true;
 
-            if (!ScreenShare.isSharing) {
+            // Persist image if present
+            try {
+                if (notification.image && notification.image !== "") {
+                    const persistedPath = NotificationPersistence.persistImage(
+                        notification.image,
+                        notification.id.toString()
+                    );
+                    if (persistedPath !== "") {
+                        const newMap = Object.assign({}, root.persistedImages);
+                        newMap[notification.id] = persistedPath;
+                        root.persistedImages = newMap;
+                    }
+                }
+            } catch (e) {
+                console.log("Error persisting notification image:", e);
+            }
+
+            if (!ScreenShare.isSharing && !root.doNotDisturb) {
                 root.popups.push(notification)
             }
-            
+
             // Connect to notification closed signal to clean up
             notification.closed.connect(() => {
                 const index = root.popups.indexOf(notification);
@@ -46,7 +71,7 @@ Singleton {
                     root.popups.splice(index, 1);
                 }
             });
-            
+
             const timer = timerComponent.createObject(notification, {
                 interval: notification.expireTimeout > 0 ? notification.expireTimeout : root.defaultExpireTimeout,
                 notification: notification
