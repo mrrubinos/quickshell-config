@@ -29,7 +29,7 @@ Rectangle {
 
     readonly property bool hasAppIcon: notification.appIcon !== ""
     readonly property bool hasImage: notification.image !== ""
-    readonly property int nonAnimHeight: summaryView.implicitHeight + appName.height + body.height + actionsView.height + actionsView.anchors.topMargin + inner.anchors.margins * 2
+    readonly property int nonAnimHeight: summaryView.implicitHeight + appNameRow.height + body.height + (replyLoader.active ? replyLoader.height + margin : 0) + inner.anchors.margins * 2
     
     // Safe properties with defaults
     readonly property string appIcon: notification.appIcon ?? ""
@@ -56,15 +56,22 @@ Rectangle {
             if (event.button !== Qt.LeftButton)
                 return;
 
-            switch (root.notification.actions.length) {
-                case 0:
-                    root.notification.dismiss()
-                    return
-                case 1:
-                    root.notification.actions[0].invoke()
-                    return
-                default:
-                    return
+            // Try to focus window by desktopEntry first, then appName
+            const searchId = root.notification.desktopEntry || root.appName;
+            // Use notification summary as a hint for title matching (useful for PWAs)
+            const titleHint = root.summary;
+
+            console.log("Notification clicked. SearchId:", searchId, "TitleHint:", titleHint);
+
+            if (searchId) {
+                Niri.getWindowByAppId(searchId, (window) => {
+                    if (window && window.id) {
+                        console.log("Focusing window:", window.title, "ID:", window.id);
+                        Niri.focusWindowById(window.id);
+                    } else {
+                        console.log("No matching window found for:", searchId);
+                    }
+                }, titleHint);
             }
         }
 
@@ -77,30 +84,32 @@ Rectangle {
             anchors.top: parent.top
             implicitHeight: root.nonAnimHeight
 
-            DsText.BodyS {
-                id: appName
+            RowLayout {
+                id: appNameRow
 
                 anchors.left: parent.left
                 anchors.top: parent.top
-                maximumLineCount: 1
-                text: root.appName
+                spacing: Foundations.spacing.xs
 
-                Behavior on opacity {
-                    BasicNumberAnimation {
+                DsText.BodyM {
+                    id: appName
+
+                    Layout.fillWidth: false
+                    maximumLineCount: 1
+                    text: root.appName
+
+                    Behavior on opacity {
+                        BasicNumberAnimation {
+                        }
                     }
                 }
-            }
-            CircularButtons.S {
-                id: closeButton
 
-                anchors.right: parent.right
-                anchors.top: parent.top
-
-                icon: "close"
-                visible: root.notification.actions.length > 0
-
-                onClicked: {
-                    root.notification.dismiss()
+                Icons.MaterialFontIcon {
+                    Layout.alignment: Qt.AlignVCenter
+                    color: Foundations.palette.base0C
+                    font.pointSize: Foundations.font.size.m
+                    text: "reply"
+                    visible: root.notification.hasInlineReply
                 }
             }
             Loader {
@@ -108,7 +117,7 @@ Rectangle {
 
                 active: root.hasImage
                 anchors.left: parent.left
-                anchors.top: appName.bottom
+                anchors.top: appNameRow.bottom
                 anchors.topMargin: Foundations.spacing.xs
                 asynchronous: true
                 height: root.imageDimension
@@ -136,7 +145,7 @@ Rectangle {
 
                 anchors.bottom: root.hasImage ? mainImage.bottom : undefined
                 anchors.right: root.hasImage ? mainImage.right : undefined
-                anchors.top: root.hasImage ? undefined : appName.bottom
+                anchors.top: root.hasImage ? undefined : appNameRow.bottom
                 anchors.topMargin: root.hasImage ? undefined : Foundations.spacing.xs
                 asynchronous: true
 
@@ -170,19 +179,19 @@ Rectangle {
 
                         sourceComponent: Icons.MaterialFontIcon {
                             color: root.isCritical ? Foundations.palette.base08 : Foundations.palette.base07
-                            font.pointSize: Foundations.font.size.l
-                            text: IconsService.getNotifIcon(root.isCritical ? "critical" : root.summaryStr)
+                            font.pointSize: Foundations.font.size.xl
+                            text: IconsService.getNotifIcon(root.isCritical ? "critical" : root.summary)
                         }
                     }
                 }
             }
 
-            DsText.BodyM {
+            DsText.BodyL {
                 id: summaryView
 
                 anchors.left: mainImage.right
                 anchors.leftMargin: margin
-                anchors.top: appName.bottom
+                anchors.top: appNameRow.bottom
                 height: implicitHeight
                 maximumLineCount: 1
                 text: summaryMetrics.elidedText
@@ -196,7 +205,7 @@ Rectangle {
                 font.pointSize: summaryView.font.pointSize
                 text: root.summary
             }
-            DsText.BodyS {
+            DsText.BodyM {
                 id: body
 
                 anchors.left: summaryView.left
@@ -210,40 +219,26 @@ Rectangle {
                 textFormat: Text.MarkdownText
                 wrapMode: Text.WrapAtWordBoundaryOrAnywhere
             }
-            RowLayout {
-                id: actionsView
 
-                anchors.horizontalCenter: parent.horizontalCenter
+            Loader {
+                id: replyLoader
+
+                active: root.notification.hasInlineReply
+                anchors.left: summaryView.left
+                anchors.right: parent.right
+                anchors.rightMargin: margin
                 anchors.top: body.bottom
-                anchors.topMargin: margin
-                opacity: 1
-                spacing: margin
+                anchors.topMargin: active ? margin : 0
+                asynchronous: true
+                visible: active
 
-                Repeater {
-                    model: root.notification.actions
-
-                    ActionButton {
-                        required property NotificationAction modelData
-
-                        text: qsTr(modelData?.text ?? "")
-                        leftIcon: ""
-                        visible: root.notification?.actions?.length > 1
-
-                        onClicked: {
-                            modelData.invoke()
-                        }
+                sourceComponent: ReplyInput {
+                    onReplySent: text => {
+                        root.notification.sendInlineReply(text)
                     }
                 }
             }
         }
     }
 
-    component ActionButton: Buttons.PrimaryButton {
-        id: actionButton
-
-        margin: Foundations.spacing.xs
-
-        property color backgroundColor: root.isCritical ? Foundations.palette.base09 : Foundations.palette.base07
-        property color foregroundColor: root.isCritical ? Foundations.palette.base01 : Foundations.palette.base04
-    }
 }

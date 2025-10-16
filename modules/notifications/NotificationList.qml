@@ -20,7 +20,7 @@ Item {
         if (isAutoMode) {
             return flickable.contentHeight + root.padding * 2;
         } else {
-            return flickable.contentHeight + clearButton.height + columnLayout.spacing + root.padding;
+            return flickable.contentHeight + buttonRow.height + columnLayout.spacing + root.padding;
         }
     }
     required property int padding
@@ -37,19 +37,35 @@ Item {
         anchors.fill: parent
         spacing: Foundations.spacing.s
 
-        Buttons.HintButton {
-            id: clearButton
+        RowLayout {
+            id: buttonRow
 
             Layout.alignment: Qt.AlignRight
             Layout.rightMargin: root.padding
             Layout.topMargin: root.padding
+            spacing: Foundations.spacing.s
             visible: !root.isAutoMode
-            
-            hint: "Clear all notifications"
-            icon: "delete"
-            
-            onClicked: {
-                NotificationService.clearNotifications()
+
+            Buttons.HintButton {
+                id: dndButton
+
+                hint: NotificationService.doNotDisturb ? "Disable Do Not Disturb" : "Enable Do Not Disturb"
+                icon: NotificationService.doNotDisturb ? "do_not_disturb_on" : "notifications"
+
+                onClicked: {
+                    NotificationService.doNotDisturb = !NotificationService.doNotDisturb
+                }
+            }
+
+            Buttons.HintButton {
+                id: clearButton
+
+                hint: "Clear all notifications"
+                icon: "delete"
+
+                onClicked: {
+                    NotificationService.clearNotifications()
+                }
             }
         }
 
