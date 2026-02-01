@@ -27,20 +27,26 @@ Search {
 
     list: variants.instances
 
+    // Reference to trigger re-sort when history changes
+    property var historyData: LauncherHistory.launchCounts
+
     Variants {
         id: variants
 
         // Sort by launch count (descending), then alphabetically
-        model: [...DesktopEntries.applications.values]
-            .filter(app => !ConfigsJson.excludedDesktops.includes(app.id))
-            .sort((a, b) => {
-                const countA = LauncherHistory.getLaunchCount(a.id)
-                const countB = LauncherHistory.getLaunchCount(b.id)
-                if (countA !== countB) {
-                    return countB - countA  // Higher count first
-                }
-                return a.name.localeCompare(b.name)
-            })
+        model: {
+            const counts = root.historyData  // Dependency for reactivity
+            return [...DesktopEntries.applications.values]
+                .filter(app => !ConfigsJson.excludedDesktops.includes(app.id))
+                .sort((a, b) => {
+                    const countA = counts[a.id] || 0
+                    const countB = counts[b.id] || 0
+                    if (countA !== countB) {
+                        return countB - countA  // Higher count first
+                    }
+                    return a.name.localeCompare(b.name)
+                })
+        }
 
         delegate: LauncherItemModel {
             required property DesktopEntry modelData
