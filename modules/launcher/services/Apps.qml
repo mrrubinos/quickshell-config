@@ -10,6 +10,9 @@ Search {
     id: root
 
     function launch(entry: DesktopEntry): void {
+        // Record launch for history
+        LauncherHistory.recordLaunch(entry.id)
+
         if (entry.runInTerminal) {
             const terminal = "alacritty";
             const terminalCommand = `${terminal} -e ${entry.command.join(" ")}`;
@@ -23,13 +26,21 @@ Search {
     }
 
     list: variants.instances
-    
+
     Variants {
         id: variants
 
+        // Sort by launch count (descending), then alphabetically
         model: [...DesktopEntries.applications.values]
             .filter(app => !ConfigsJson.excludedDesktops.includes(app.id))
-            .sort((a, b) => a.name.localeCompare(b.name))
+            .sort((a, b) => {
+                const countA = LauncherHistory.getLaunchCount(a.id)
+                const countB = LauncherHistory.getLaunchCount(b.id)
+                if (countA !== countB) {
+                    return countB - countA  // Higher count first
+                }
+                return a.name.localeCompare(b.name)
+            })
 
         delegate: LauncherItemModel {
             required property DesktopEntry modelData
