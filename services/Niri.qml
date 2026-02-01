@@ -55,6 +55,14 @@ Singleton {
         switchLayoutProcess.running = false;
         switchLayoutProcess.running = true;
     }
+
+    // Function to focus a workspace by ID
+    function focusWorkspace(workspaceId: int): void {
+        focusWorkspaceProcess.command = ["niri", "msg", "action", "focus-workspace", workspaceId.toString()];
+        focusWorkspaceProcess.running = false;
+        focusWorkspaceProcess.running = true;
+    }
+
     function updateFocusedOutput(): void {
         focusedOutputProcess.running = false;
         focusedOutputProcess.running = true;
@@ -110,6 +118,13 @@ Singleton {
     // Process for switching keyboard layout
     Process {
         id: switchLayoutProcess
+
+        running: false
+    }
+
+    // Process for focusing workspace
+    Process {
+        id: focusWorkspaceProcess
 
         running: false
     }

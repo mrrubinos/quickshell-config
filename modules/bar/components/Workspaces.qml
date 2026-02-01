@@ -136,15 +136,18 @@ Item {
             Rectangle {
                 id: workspacePill
 
+                property bool isHovered: pillMouseArea.containsMouse
+
                 color: {
                     if (model.isFocused)
                         return activeColor;
-
+                    if (isHovered)
+                        return Qt.lighter(Foundations.palette.base04, 1.3);
                     return Foundations.palette.base04;
                 }
                 height: 12
                 radius: 6
-                scale: model.isFocused ? 1.0 : 0.9
+                scale: model.isFocused ? 1.0 : (isHovered ? 0.95 : 0.9)
                 width: {
                     if (model.isFocused)
                         return 44;
@@ -171,6 +174,21 @@ Item {
                     NumberAnimation {
                         duration: Foundations.duration.standard
                         easing.type: Easing.OutBack
+                    }
+                }
+
+                MouseArea {
+                    id: pillMouseArea
+
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    hoverEnabled: true
+                    cursorShape: model.isFocused ? Qt.ArrowCursor : Qt.PointingHandCursor
+
+                    onClicked: {
+                        if (!model.isFocused) {
+                            Niri.focusWorkspace(model.id);
+                        }
                     }
                 }
 

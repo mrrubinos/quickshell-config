@@ -196,6 +196,19 @@ Singleton {
     function connect() {
         if (connecting || connected) return;
 
+        // Ensure we have a service to connect to
+        if (!serviceName && connections.length > 0) {
+            const firstConnection = connections[0];
+            serviceName = firstConnection.serviceName;
+            connectionName = firstConnection.connectionName;
+            activeConnection = firstConnection.serviceName;
+        }
+
+        if (!serviceName) {
+            errorMessage = "No VPN service configured";
+            return;
+        }
+
         connecting = true;
         errorMessage = "";
         connectProcess.running = true;
@@ -203,6 +216,11 @@ Singleton {
 
     function disconnect() {
         if (connecting || !connected) return;
+
+        if (!serviceName) {
+            errorMessage = "No VPN service configured";
+            return;
+        }
 
         connecting = true;
         errorMessage = "";

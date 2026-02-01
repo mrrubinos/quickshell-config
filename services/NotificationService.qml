@@ -10,12 +10,23 @@ import QtQuick
 Singleton {
     id: root
 
-    // TODO: Redesign using direct Notification objects
     readonly property list<Notification> notifications: server.trackedNotifications.values
     property list<Notification> popups: []
+    property list<Notification> queuedPopups: []
 
     property int defaultExpireTimeout: 4000
+    property int maxVisiblePopups: 3
     property bool doNotDisturb: false
+
+    // Check if UI is blocking popups (launcher or notification center open on any screen)
+    readonly property bool isUiBlocking: {
+        for (const visibilities of Visibilities.screens.values()) {
+            if (visibilities.launcher || visibilities.notifications) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // Map of notification ID to persisted image path
     property var persistedImages: ({})
@@ -26,8 +37,37 @@ Singleton {
 
     function clearNotifications() {
         root.popups = []
-        for (const notification  of root.notifications)
+        root.queuedPopups = []
+        for (const notification of root.notifications)
             notification.dismiss()
+    }
+
+    // Process queued notifications when UI unblocks
+    function processQueue() {
+        while (root.queuedPopups.length > 0 && root.popups.length < root.maxVisiblePopups && !root.isUiBlocking) {
+            const notification = root.queuedPopups.shift();
+            // Check notification is still valid (not dismissed)
+            if (root.notifications.includes(notification)) {
+                root.popups.push(notification);
+            }
+        }
+    }
+
+    // Add notification to popups or queue
+    function addPopup(notification: Notification) {
+        if (root.isUiBlocking) {
+            root.queuedPopups.push(notification);
+        } else if (root.popups.length < root.maxVisiblePopups) {
+            root.popups.push(notification);
+        } else {
+            root.queuedPopups.push(notification);
+        }
+    }
+
+    onIsUiBlockingChanged: {
+        if (!isUiBlocking) {
+            processQueue();
+        }
     }
 
     NotificationServer {
@@ -61,14 +101,20 @@ Singleton {
             }
 
             if (!ScreenShare.isSharing && !root.doNotDisturb) {
-                root.popups.push(notification)
+                root.addPopup(notification);
             }
 
             // Connect to notification closed signal to clean up
             notification.closed.connect(() => {
-                const index = root.popups.indexOf(notification);
-                if (index >= 0) {
-                    root.popups.splice(index, 1);
+                const popupIndex = root.popups.indexOf(notification);
+                if (popupIndex >= 0) {
+                    root.popups.splice(popupIndex, 1);
+                    // Try to show queued notification
+                    root.processQueue();
+                }
+                const queueIndex = root.queuedPopups.indexOf(notification);
+                if (queueIndex >= 0) {
+                    root.queuedPopups.splice(queueIndex, 1);
                 }
             });
 
@@ -82,20 +128,21 @@ Singleton {
 
     Component {
         id: timerComponent
-        
+
         Timer {
             property var notification
-            
+
             repeat: false
             onTriggered: {
                 const index = root.popups.indexOf(notification);
-                
+
                 if (index >= 0) {
                     root.popups.splice(index, 1);
+                    root.processQueue();
                 }
 
                 if (notification.transient) {
-                    notification.dismiss()
+                    notification.dismiss();
                 }
             }
         }
