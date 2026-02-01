@@ -88,18 +88,31 @@ Item {
                 anchors.right: parent.right
                 spacing: Foundations.spacing.s
 
+                // Auto mode (popups): show flat list of individual notifications
                 Repeater {
-                    model: root.isAutoMode ? NotificationService.popups.length : NotificationService.notifications.length
+                    model: root.isAutoMode ? NotificationService.popups.length : 0
 
                     delegate: NotificationItem {
                         required property int index
 
                         notification: {
-                            const list = root.isAutoMode ? NotificationService.popups : NotificationService.notifications;
+                            const list = NotificationService.popups;
                             const reverseIndex = list.length - 1 - index;
                             return reverseIndex >= 0 && reverseIndex < list.length ? list[reverseIndex] : null;
                         }
 
+                        notificationWidth: root.notificationWidth
+                    }
+                }
+
+                // Manual mode (notification center): show grouped notifications
+                Repeater {
+                    model: root.isAutoMode ? 0 : NotificationService.groupedNotifications.length
+
+                    delegate: NotificationGroup {
+                        required property int index
+
+                        group: NotificationService.groupedNotifications[index]
                         notificationWidth: root.notificationWidth
                     }
                 }

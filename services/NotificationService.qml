@@ -28,6 +28,46 @@ Singleton {
         return false;
     }
 
+    // Grouping: get unique app key for a notification
+    function getAppKey(notification: Notification): string {
+        return notification.desktopEntry || notification.appName || "unknown";
+    }
+
+    // Grouped notifications for notification center (most recent first per group)
+    readonly property var groupedNotifications: {
+        const groups = new Map();
+        // Process in reverse order so newest are first
+        for (let i = notifications.length - 1; i >= 0; i--) {
+            const notification = notifications[i];
+            const key = getAppKey(notification);
+            if (!groups.has(key)) {
+                groups.set(key, {
+                    appKey: key,
+                    appName: notification.appName || key,
+                    appIcon: notification.appIcon || "",
+                    notifications: [],
+                    latestNotification: notification
+                });
+            }
+            groups.get(key).notifications.push(notification);
+        }
+        return Array.from(groups.values());
+    }
+
+    // Get count of notifications for a specific app
+    function getGroupCount(appKey: string): int {
+        const group = groupedNotifications.find(g => g.appKey === appKey);
+        return group ? group.notifications.length : 0;
+    }
+
+    // Dismiss all notifications from a specific app
+    function dismissGroup(appKey: string): void {
+        const toDismiss = notifications.filter(n => getAppKey(n) === appKey);
+        for (const notification of toDismiss) {
+            notification.dismiss();
+        }
+    }
+
     // Map of notification ID to persisted image path
     property var persistedImages: ({})
 

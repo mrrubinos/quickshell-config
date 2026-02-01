@@ -293,42 +293,31 @@ Rectangle {
         visible: active
     }
 
-    component ClickableIcon: Item {
+    component ClickableIcon: Rectangle {
         id: clickableIcon
 
         signal clicked()
 
         default property alias content: contentContainer.children
 
-        implicitWidth: contentContainer.childrenRect.width
-        implicitHeight: contentContainer.childrenRect.height
+        implicitWidth: contentContainer.childrenRect.width + Foundations.spacing.xxs * 2
+        implicitHeight: contentContainer.childrenRect.height + Foundations.spacing.xxs * 2
+        color: "transparent"
+        radius: Foundations.radius.s
 
         Item {
             id: contentContainer
-            anchors.fill: parent
+            anchors.centerIn: parent
+            width: childrenRect.width
+            height: childrenRect.height
         }
 
-        Rectangle {
-            anchors.fill: parent
-            anchors.margins: -Foundations.spacing.xxs
-            radius: Foundations.radius.s
-            color: mouseArea.containsMouse ? Qt.alpha(Foundations.palette.base05, 0.15) : "transparent"
-
-            Behavior on color {
-                BasicColorAnimation {
-                    duration: Foundations.duration.fast
-                }
+        InteractiveArea {
+            function onClicked(): void {
+                clickableIcon.clicked();
             }
-        }
 
-        MouseArea {
-            id: mouseArea
-            anchors.fill: parent
-            anchors.margins: -Foundations.spacing.xxs
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-
-            onClicked: clickableIcon.clicked()
+            radius: clickableIcon.radius
         }
     }
 }

@@ -57,8 +57,9 @@ Item {
             popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
             popouts.hasCurrent = true;
         } else if (id === "date") {
-            // Date calendar is only shown on click, not hover
-            // Skip hover handling for date component
+            popouts.currentName = "calendar";
+            popouts.currentCenter = Qt.binding(() => item.mapToItem(root, item.implicitWidth / 2, 0).x);
+            popouts.hasCurrent = true;
         } else if (id === "power") {
             if (popouts.currentName === "session" && popouts.hasCurrent) {
                 popouts.hasCurrent = false;

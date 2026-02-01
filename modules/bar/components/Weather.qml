@@ -154,12 +154,18 @@ Rectangle {
         }
     }
 
-    // Hover states for tooltip
-    HoverHandler {
-        id: hoverHandler
+    // Click to refresh with visual feedback
+    InteractiveArea {
+        id: interactiveArea
 
-        onHoveredChanged: {
-            if (hovered && !Weather.isLoading && !Weather.errorMessage) {
+        function onClicked(): void {
+            Weather.refresh();
+        }
+
+        radius: parent.radius
+
+        onContainsMouseChanged: {
+            if (containsMouse && !Weather.isLoading && !Weather.errorMessage) {
                 tooltip.visible = true;
                 tooltip.opacity = 1;
             } else {
@@ -168,15 +174,4 @@ Rectangle {
             }
         }
     }
-
-    // Click to refresh
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-
-        onClicked: {
-            Weather.refresh();
-        }
-    }
-
 }

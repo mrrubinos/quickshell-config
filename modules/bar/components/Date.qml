@@ -18,14 +18,19 @@ Rectangle {
     implicitHeight: height
     radius: Foundations.radius.all
 
+    InteractiveArea {
+        function onClicked(): void {
+            root.clicked();
+        }
+
+        radius: parent.radius
+    }
+
     Text.BodyM {
         id: dateText
 
         anchors.centerIn: parent
         font.family: Foundations.font.family.mono
         text: Time.format("ddd dd MMM  HH:mm")
-        interactive: true
-
-        onClicked: root.clicked()
     }
 }

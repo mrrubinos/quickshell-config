@@ -18,9 +18,8 @@ Rectangle {
     id: root
 
     required property Notification notification
-    required property int notificationWidth 
+    required property int notificationWidth
 
-    // ToDo Harcoded?
     readonly property int borderRadius: Foundations.radius.s
     readonly property int margin: Foundations.spacing.s
 
@@ -30,7 +29,7 @@ Rectangle {
     readonly property bool hasAppIcon: notification.appIcon !== ""
     readonly property bool hasImage: notification.image !== ""
     readonly property int nonAnimHeight: summaryView.implicitHeight + appNameRow.height + body.height + (replyLoader.active ? replyLoader.height + margin : 0) + inner.anchors.margins * 2
-    
+
     // Safe properties with defaults
     readonly property string appIcon: notification.appIcon ?? ""
     readonly property string summary: notification.summary ?? ""
@@ -41,15 +40,40 @@ Rectangle {
     readonly property bool isCritical: notification.urgency === NotificationUrgency.Critical
     readonly property bool isLow: notification.urgency === NotificationUrgency.Low
 
-    // anchors.horizontalCenter: pa?ent.horizontalCenter
-    color: root.isCritical ? Foundations.palette.base03 : Foundations.palette.base01
+    // Click feedback state: "idle", "searching", "found", "notfound"
+    property string clickState: "idle"
+
+    color: {
+        if (clickState === "searching") return Qt.lighter(Foundations.palette.base02, 1.1);
+        if (clickState === "found") return Foundations.palette.base0B;
+        if (clickState === "notfound") return Foundations.palette.base09;
+        if (root.isCritical) return Foundations.palette.base03;
+        return Foundations.palette.base01;
+    }
     implicitHeight: inner.implicitHeight
     implicitWidth: notificationWidth
     radius: borderRadius
 
+    Behavior on color {
+        BasicColorAnimation {
+            duration: Foundations.duration.fast
+        }
+    }
+
+    // Reset click state after feedback
+    Timer {
+        id: feedbackTimer
+        interval: 600
+        onTriggered: root.clickState = "idle"
+    }
+
     MouseArea {
+        id: mouseArea
+
         acceptedButtons: Qt.LeftButton
         anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
         preventStealing: true
 
         onClicked: event => {
@@ -61,18 +85,23 @@ Rectangle {
             // Use notification summary as a hint for title matching (useful for PWAs)
             const titleHint = root.summary;
 
-            console.log("Notification clicked. SearchId:", searchId, "TitleHint:", titleHint);
-
-            if (searchId) {
-                Niri.getWindowByAppId(searchId, (window) => {
-                    if (window && window.id) {
-                        console.log("Focusing window:", window.title, "ID:", window.id);
-                        Niri.focusWindowById(window.id);
-                    } else {
-                        console.log("No matching window found for:", searchId);
-                    }
-                }, titleHint);
+            if (!searchId) {
+                root.clickState = "notfound";
+                feedbackTimer.restart();
+                return;
             }
+
+            root.clickState = "searching";
+
+            Niri.getWindowByAppId(searchId, (window) => {
+                if (window && window.id) {
+                    root.clickState = "found";
+                    Niri.focusWindowById(window.id);
+                } else {
+                    root.clickState = "notfound";
+                }
+                feedbackTimer.restart();
+            }, titleHint);
         }
 
         Item {
