@@ -39,7 +39,6 @@ ListView {
     required property string searchText
     required property PersistentProperties visibilities
 
-    // ToDo: review
     property int itemHeight: 57
     property int maxShown: 8
     property int margin: Foundations.spacing.s

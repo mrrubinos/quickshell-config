@@ -17,6 +17,7 @@ Rectangle {
     required property var group
     required property int notificationWidth
     property bool expanded: false
+    property bool isSelected: false
 
     readonly property int margin: Foundations.spacing.s
     readonly property int headerHeight: 32
@@ -26,6 +27,8 @@ Rectangle {
 
     color: Foundations.palette.base01
     radius: Foundations.radius.s
+    border.width: isSelected ? 2 : 0
+    border.color: isSelected ? Foundations.palette.base0D : "transparent"
     implicitWidth: notificationWidth
     implicitHeight: expanded ? expandedHeight : collapsedHeight
 
@@ -35,6 +38,12 @@ Rectangle {
     Behavior on implicitHeight {
         BasicNumberAnimation {
             duration: Foundations.duration.standard
+        }
+    }
+
+    Behavior on border.width {
+        BasicNumberAnimation {
+            duration: Foundations.duration.fast
         }
     }
 

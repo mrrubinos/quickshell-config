@@ -16,7 +16,6 @@ Item {
     required property PersistentProperties visibilities
     required property var wrapper
 
-    // ToDo: Review
     readonly property int padding: Foundations.spacing.l
     readonly property int innerMargin: Foundations.spacing.s
 

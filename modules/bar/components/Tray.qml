@@ -12,7 +12,6 @@ Rectangle {
 
     readonly property alias items: items
 
-    // ToDo: Reviow (maybe review all margin/paddings)
     property int margin: Foundations.spacing.xxs
     property int spacingItems: Foundations.spacing.xs
     property int buttonSize: height - margin * 2  // Match bar height
