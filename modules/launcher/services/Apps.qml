@@ -21,8 +21,24 @@ Search {
             Niri.spawn(entry.command.join(" "));
         }
     }
-    function search(search: string): list<var> {
-        return query(search);
+    function search(searchText: string): list<var> {
+        const results = query(searchText);
+
+        // Only sort by launch count when there's no search query
+        // When searching, preserve fuzzy match order
+        if (!searchText) {
+            const counts = historyData;
+            return results.sort((a, b) => {
+                const countA = counts[a.originalData?.id] || 0;
+                const countB = counts[b.originalData?.id] || 0;
+                if (countA !== countB) {
+                    return countB - countA;  // Higher count first
+                }
+                return a.name.localeCompare(b.name);
+            });
+        }
+
+        return results;
     }
 
     list: variants.instances
@@ -33,20 +49,8 @@ Search {
     Variants {
         id: variants
 
-        // Sort by launch count (descending), then alphabetically
-        model: {
-            const counts = root.historyData  // Dependency for reactivity
-            return [...DesktopEntries.applications.values]
-                .filter(app => !ConfigsJson.excludedDesktops.includes(app.id))
-                .sort((a, b) => {
-                    const countA = counts[a.id] || 0
-                    const countB = counts[b.id] || 0
-                    if (countA !== countB) {
-                        return countB - countA  // Higher count first
-                    }
-                    return a.name.localeCompare(b.name)
-                })
-        }
+        model: [...DesktopEntries.applications.values]
+            .filter(app => !ConfigsJson.excludedDesktops.includes(app.id))
 
         delegate: LauncherItemModel {
             required property DesktopEntry modelData
