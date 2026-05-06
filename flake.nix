@@ -95,7 +95,11 @@
             }:
             pkgs.stdenv.mkDerivation rec {
               pname = "quickshell-config";
-              version = "0.1.0";
+              # Track the input revision so the store-path version string
+              # actually reflects the source. `dirtyShortRev` is set when
+              # the working tree has uncommitted changes; "dev" is the
+              # last-resort fallback for non-git source contexts.
+              version = self.shortRev or self.dirtyShortRev or "dev";
 
               src = ./.;
 
