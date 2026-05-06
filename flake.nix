@@ -28,9 +28,8 @@
           inherit system;
         }
       );
-    in
-    {
-      packages = forAllSystems (
+
+      mkQuickshellConfigFor =
         system:
         let
           pkgs = nixpkgsFor.${system};
@@ -230,34 +229,20 @@
               };
             };
         in
-        {
-          default = self.packages.${system}.quickshell-config;
+        mkQuickshellConfig;
+    in
+    {
+      # Per-system factory exposed under `lib`. Functions cannot live under
+      # `packages.<system>` (the flake schema rejects non-derivations there),
+      # so consumers call `inputs.quickshell-config.lib.${system}.mkQuickshellConfig`.
+      lib = forAllSystems (system: {
+        mkQuickshellConfig = mkQuickshellConfigFor system;
+      });
 
-          quickshell-config = mkQuickshellConfig { };
-
-          # Function to create config with custom commands
-          withCommands = commandsPath: mkQuickshellConfig { inherit commandsPath; };
-
-          # Function to create config with both commands and session commands
-          withAllCommands =
-            {
-              commandsPath ? null,
-              sessionCommandsPath ? null,
-              interactiveCommandsPath ? null,
-              stylix ? null,
-              excludedAppsPath ? null,
-            }:
-            mkQuickshellConfig {
-              inherit
-                commandsPath
-                sessionCommandsPath
-                interactiveCommandsPath
-                stylix
-                excludedAppsPath
-                ;
-            };
-        }
-      );
+      packages = forAllSystems (system: rec {
+        default = quickshell-config;
+        quickshell-config = mkQuickshellConfigFor system { };
+      });
 
       # Home Manager module
       homeManagerModules.default =

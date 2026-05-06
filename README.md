@@ -69,9 +69,13 @@ spawn-at-startup "sh" "-c" "~/.config/niri/start-quickshell"
 
 This configuration is packaged as a Nix flake with:
 
-- **Package**: `quickshell-config` - The main QuickShell configuration
-- **Home Manager Module**: For easy integration with home-manager
-- **Overlay**: For system-wide availability
+- **`packages.<system>.default`** — no-arg build of the configuration.
+- **`lib.<system>.mkQuickshellConfig`** — factory taking
+  `{ commandsPath?, sessionCommandsPath?, interactiveCommandsPath?, excludedAppsPath?, stylix? }`
+  for downstream consumers.
+- **`homeManagerModules.default`** — home-manager module (currently
+  exposes only `enable`; see `IMPROVEMENTS.md` #6).
+- **`overlays.default`** — for system-wide availability.
 
 ## Dependencies
 
