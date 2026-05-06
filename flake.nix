@@ -195,11 +195,10 @@
                   --prefix XDG_DATA_DIRS : "$out/share:${pkgs.material-symbols}/share"
 
                 # Launcher toggle script
-                cat > $out/bin/qs-toggle-launcher << EOF
-                #!/usr/bin/env bash
-                ${quickshellPkg}/bin/quickshell -c $out/share/quickshell-config ipc call drawers toggle launcher
-                EOF
-                chmod +x $out/bin/qs-toggle-launcher
+                install -Dm755 bin/qs-toggle-launcher $out/bin/qs-toggle-launcher
+                substituteInPlace $out/bin/qs-toggle-launcher \
+                  --replace-fail @QUICKSHELL@ ${quickshellPkg}/bin/quickshell \
+                  --replace-fail @CONFIG@ $out/share/quickshell-config
               '';
 
               meta = with pkgs.lib; {
