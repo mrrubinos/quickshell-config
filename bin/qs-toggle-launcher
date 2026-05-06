@@ -1,4 +1,3 @@
 #!/usr/bin/env bash
 # Toggle the quickshell-config launcher drawer.
-# Placeholders are substituted at install time by flake.nix.
-exec @QUICKSHELL@ -c @CONFIG@ ipc call drawers toggle launcher
+exec @QS_IPC@ call drawers toggle launcher

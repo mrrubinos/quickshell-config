@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Forward IPC calls to the running quickshell-config instance.
+# Routes through the wrapped quickshell-config binary so the calling
+# quickshell version always matches the running one — IPC is not
+# forward/backward compatible across versions.
+exec @QUICKSHELL_CONFIG@ ipc "$@"

@@ -107,76 +107,81 @@
               ];
 
               installPhase = ''
-                # Copy all configuration files
-                mkdir -p $out/share/quickshell-config
-                cp -r ds modules services shell data $out/share/quickshell-config/ 2>/dev/null || true
-                cp shell.qml $out/share/quickshell-config/
+                # Install QML tree under quickshell's named-config search path
+                # (XDG config dir, per `quickshell --help`). Selecting the config
+                # by name ("qsc") instead of by store path means IPC callers
+                # built from a different generation can still talk to the
+                # running instance.
+                configDir=$out/etc/xdg/quickshell/qsc
+                mkdir -p $configDir
+                cp -r ds modules services shell data $configDir/
+                cp shell.qml $configDir/
 
                 # Process Foundations.qml with Stylix replacement if available
                 ${
                   if stylix != null then
                     ''
                         # Use template and replace placeholders
-                        cat > $out/share/quickshell-config/ds/Foundations.qml << 'EOF'
+                        cat > $configDir/ds/Foundations.qml << 'EOF'
                       ${replaceStylixPlaceholders (builtins.readFile ./ds/Foundations.qml.template) stylix}
                       EOF
                     ''
                   else
                     ''
                       # Use original Foundations.qml as fallback
-                      [ -f ds/Foundations.qml ] && cp ds/Foundations.qml $out/share/quickshell-config/ds/
+                      [ -f ds/Foundations.qml ] && cp ds/Foundations.qml $configDir/ds/
                     ''
                 }
 
                 # Copy JSON files (use provided paths or default from source)
                 ${
                   if commandsPath != null then
-                    ''cp ${commandsPath} $out/share/quickshell-config/commands.json''
+                    ''cp ${commandsPath} $configDir/commands.json''
                   else
                     ''
                       if [ -f commands.json ]; then
-                        cp commands.json $out/share/quickshell-config/commands.json
+                        cp commands.json $configDir/commands.json
                       else
-                        echo '{"commands":[]}' > $out/share/quickshell-config/commands.json
+                        echo '{"commands":[]}' > $configDir/commands.json
                       fi
                     ''
                 }
 
                 ${
                   if sessionCommandsPath != null then
-                    ''cp ${sessionCommandsPath} $out/share/quickshell-config/session-commands.json''
+                    ''cp ${sessionCommandsPath} $configDir/session-commands.json''
                   else
                     ''
                       if [ -f session-commands.json ]; then
-                        cp session-commands.json $out/share/quickshell-config/session-commands.json
+                        cp session-commands.json $configDir/session-commands.json
                       else
-                        echo '{"commands":[]}' > $out/share/quickshell-config/session-commands.json
+                        echo '{"commands":[]}' > $configDir/session-commands.json
                       fi
                     ''
                 }
 
                 ${
                   if interactiveCommandsPath != null then
-                    ''cp ${interactiveCommandsPath} $out/share/quickshell-config/interactive-commands.json''
+                    ''cp ${interactiveCommandsPath} $configDir/interactive-commands.json''
                   else
                     ''
                       if [ -f interactive-commands.json ]; then
-                        cp interactive-commands.json $out/share/quickshell-config/interactive-commands.json
+                        cp interactive-commands.json $configDir/interactive-commands.json
                       else
-                        echo '{"commands":[]}' > $out/share/quickshell-config/interactive-commands.json
+                        echo '{"commands":[]}' > $configDir/interactive-commands.json
                       fi
                     ''
                 }
 
                 ${
                   if excludedAppsPath != null then
-                    ''cp ${excludedAppsPath} $out/share/quickshell-config/excluded-apps.json''
+                    ''cp ${excludedAppsPath} $configDir/excluded-apps.json''
                   else
                     ''
                       if [ -f excluded-apps.json ]; then
-                        cp excluded-apps.json $out/share/quickshell-config/excluded-apps.json
+                        cp excluded-apps.json $configDir/excluded-apps.json
                       else
-                        echo '{"excludedApps":[]}' > $out/share/quickshell-config/excluded-apps.json
+                        echo '{"excludedApps":[]}' > $configDir/excluded-apps.json
                       fi
                     ''
                 }
@@ -188,17 +193,26 @@
                 mkdir -p $out/share/fonts
                 ln -s ${pkgs.material-symbols}/share/fonts/TTF $out/share/fonts/
 
-                # Main quickshell wrapper
+                # Main quickshell wrapper. --config qsc selects the named
+                # config installed under $out/etc/xdg/quickshell/qsc/, which
+                # is reachable via XDG_CONFIG_DIRS.
                 makeWrapper ${quickshellPkg}/bin/quickshell $out/bin/quickshell-config \
-                  --add-flags "--config $out/share/quickshell-config" \
+                  --add-flags "--config qsc" \
                   --prefix QML2_IMPORT_PATH : "${quickshellPkg}/lib/qt-6/qml" \
-                  --prefix XDG_DATA_DIRS : "$out/share:${pkgs.material-symbols}/share"
+                  --prefix XDG_DATA_DIRS : "$out/share:${pkgs.material-symbols}/share" \
+                  --prefix XDG_CONFIG_DIRS : "$out/etc/xdg"
 
-                # Launcher toggle script
+                # IPC helper: routes through the wrapped quickshell-config so
+                # the IPC client and the running shell are always the same
+                # quickshell binary.
+                install -Dm755 bin/qs-ipc $out/bin/qs-ipc
+                substituteInPlace $out/bin/qs-ipc \
+                  --replace-fail @QUICKSHELL_CONFIG@ $out/bin/quickshell-config
+
+                # Launcher toggle script: thin wrapper over qs-ipc.
                 install -Dm755 bin/qs-toggle-launcher $out/bin/qs-toggle-launcher
                 substituteInPlace $out/bin/qs-toggle-launcher \
-                  --replace-fail @QUICKSHELL@ ${quickshellPkg}/bin/quickshell \
-                  --replace-fail @CONFIG@ $out/share/quickshell-config
+                  --replace-fail @QS_IPC@ $out/bin/qs-ipc
               '';
 
               meta = with pkgs.lib; {

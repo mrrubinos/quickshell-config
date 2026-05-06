@@ -19,15 +19,35 @@ Personal QuickShell configuration packaged as a Nix flake.
 ### Manual Testing
 
 ```bash
-# Run the configuration directly
+# Run the packaged configuration (registered as the named config "qsc")
 quickshell-config
 
 # Or use the start script (kills existing instance first)
 ~/.config/niri/start-quickshell
 
-# Or use only the config with
+# Run from a working copy with live reload
 quickshell -p ./
 ```
+
+### IPC
+
+The packaged shell is selected by the stable name `qsc`, not by its
+nix store path, so IPC clients keep working across rebuilds.
+
+Two helpers are installed alongside `quickshell-config`:
+
+```bash
+# Forward arbitrary IPC to the running instance
+qs-ipc call <target> <method> [args...]
+
+# Convenience: toggle the launcher drawer
+qs-toggle-launcher
+```
+
+Both go through the same wrapped `quickshell` binary that runs the
+shell, so the IPC client and the running instance are always the
+same version (IPC is not forward/backward compatible across
+quickshell versions).
 
 ### Integration with Niri
 
