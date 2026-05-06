@@ -128,8 +128,17 @@
                     ''
                   else
                     ''
-                      # Use original Foundations.qml as fallback
-                      [ -f ds/Foundations.qml ] && cp ds/Foundations.qml $configDir/ds/
+                      # No stylix passed: fall back to a checked-in Foundations.qml.
+                      # Fail loudly if neither is available — silently producing a
+                      # broken package is worse than a build error.
+                      if [ -f ds/Foundations.qml ]; then
+                        cp ds/Foundations.qml $configDir/ds/
+                      else
+                        echo "ERROR: stylix is not configured and ds/Foundations.qml is not present." >&2
+                        echo "  Either pass a stylix configuration to mkQuickshellConfig," >&2
+                        echo "  or commit a non-template ds/Foundations.qml as a fallback." >&2
+                        exit 1
+                      fi
                     ''
                 }
 
