@@ -250,7 +250,11 @@
         build = self.packages.${system}.default;
       });
 
-      # Home Manager module
+      # Home Manager module. Surfaces every argument of `mkQuickshellConfig`
+      # as a typed option, builds the package once from those inputs, and
+      # exposes it back as `programs.quickshell-config.package` so other
+      # modules (e.g. window-manager keybindings) can reference the same
+      # derivation without re-invoking the factory.
       homeManagerModules.default =
         {
           config,
@@ -258,13 +262,54 @@
           pkgs,
           ...
         }:
+        let
+          cfg = config.programs.quickshell-config;
+          mkPath = description: lib.mkOption {
+            type = lib.types.nullOr lib.types.path;
+            default = null;
+            inherit description;
+          };
+        in
         {
           options.programs.quickshell-config = {
             enable = lib.mkEnableOption "quickshell-config";
+
+            commandsPath = mkPath "Path to commands.json (one-shot launcher commands).";
+            sessionCommandsPath = mkPath "Path to session-commands.json (logout/reboot/etc).";
+            interactiveCommandsPath = mkPath "Path to interactive-commands.json (calculator, bash, base64).";
+            excludedAppsPath = mkPath "Path to excluded-apps.json (desktop entries hidden from the launcher).";
+
+            stylix = lib.mkOption {
+              type = lib.types.nullOr (lib.types.attrsOf lib.types.anything);
+              default = null;
+              description = ''
+                Optional stylix base16 + font attrset used to render
+                ds/Foundations.qml from its template. Expects keys
+                base00..base0F, monoFont, sansFont.
+              '';
+            };
+
+            package = lib.mkOption {
+              type = lib.types.package;
+              readOnly = true;
+              description = ''
+                The built quickshell-config derivation. Read-only; set the
+                input options above to influence what is built.
+              '';
+              default = self.lib.${pkgs.stdenv.hostPlatform.system}.mkQuickshellConfig {
+                inherit (cfg)
+                  commandsPath
+                  sessionCommandsPath
+                  interactiveCommandsPath
+                  excludedAppsPath
+                  stylix
+                  ;
+              };
+            };
           };
 
-          config = lib.mkIf config.programs.quickshell-config.enable {
-            home.packages = [ self.packages.${pkgs.system}.quickshell-config ];
+          config = lib.mkIf cfg.enable {
+            home.packages = [ cfg.package ];
           };
         };
 

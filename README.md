@@ -73,8 +73,9 @@ This configuration is packaged as a Nix flake with:
 - **`lib.<system>.mkQuickshellConfig`** — factory taking
   `{ commandsPath?, sessionCommandsPath?, interactiveCommandsPath?, excludedAppsPath?, stylix? }`
   for downstream consumers.
-- **`homeManagerModules.default`** — home-manager module (currently
-  exposes only `enable`; see `IMPROVEMENTS.md` #6).
+- **`homeManagerModules.default`** — home-manager module exposing
+  `programs.quickshell-config.{enable,commandsPath,sessionCommandsPath,interactiveCommandsPath,excludedAppsPath,stylix}`,
+  plus a read-only `package` for other modules to reference.
 - **`overlays.default`** — for system-wide availability.
 
 ## Dependencies
