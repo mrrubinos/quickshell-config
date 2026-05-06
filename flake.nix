@@ -244,6 +244,12 @@
         quickshell-config = mkQuickshellConfigFor system { };
       });
 
+      # `nix flake check` builds the default package so evaluation and
+      # build regressions are caught in CI.
+      checks = forAllSystems (system: {
+        build = self.packages.${system}.default;
+      });
+
       # Home Manager module
       homeManagerModules.default =
         {
