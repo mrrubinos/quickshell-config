@@ -81,7 +81,6 @@ Item {
             bottomPadding: Foundations.spacing.xs
             opacity: root.isExpanded ? 1 : 0
             placeholderText: "Type >:?!# for commands/emojis(2+ chars)/pass/shell/session"
-            text: root.visibilities.searchText
             topPadding: Foundations.spacing.xs
             visible: root.isExpanded
 
@@ -210,6 +209,12 @@ Item {
                 if (list) {
                     list.currentIndex = 0;
                 }
+            }
+        }
+        function onSearchTextChanged(): void {
+            if (searchField.text !== root.visibilities.searchText) {
+                searchField.text = root.visibilities.searchText;
+                searchField.cursorPosition = searchField.text.length;
             }
         }
 
