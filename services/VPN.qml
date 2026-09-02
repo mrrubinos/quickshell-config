@@ -8,282 +8,219 @@ import QtQuick
 Singleton {
     id: root
 
-    // VPN connection state
-    property bool connected: false
-    property bool connecting: false
-    property bool available: true
-    property string errorMessage: ""
-    property string connectionName: ""
-    property string serviceName: ""
+    readonly property var vpnTypes: ["vpn", "wireguard"]
 
-    // Connection info
-    property string serverLocation: ""
-    property string ipAddress: ""
-    property string connectionTime: ""
-
-    // List of available VPN connections
     property var connections: []
-    property string activeConnection: ""
+    property string errorMessage: ""
+    property string ipAddress: ""
+    property string pendingUuid: ""
 
-    // Private properties for internal state management
-    property Timer statusTimer: Timer {
-        interval: 5000 // Check status every 5 seconds
-        running: true
-        repeat: true
-        onTriggered: root.refreshStatus()
-    }
+    readonly property var activeConnections: connections.filter(c => c.active)
+    readonly property bool connected: activeConnections.length > 0
+    readonly property bool connecting: pendingUuid !== "" || connections.some(c => c.activating)
+    readonly property bool available: connections.length > 0
+    readonly property string connectionName: activeConnections.map(c => c.displayName).join(", ")
+    readonly property string serviceName: activeConnections.length > 0 ? activeConnections[0].uuid : ""
+    readonly property string activeConnection: serviceName
 
-    // Initialize on component creation
-    Component.onCompleted: {
-        scanConnections();
-        refreshStatus();
-    }
-
-    // Private processes
-    Process {
-        id: statusProcess
-        command: ["systemctl", "status", root.serviceName]
-        running: false
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const output = text || "";
-                const wasConnected = connected;
-
-                // Parse systemctl status output
-                if (output.includes("Active: active (running)")) {
-                    connected = true;
-                    available = true;
-                    errorMessage = "";
-
-                    // If we just connected, get additional info
-                    if (!wasConnected) {
-                        getConnectionInfo();
-                    }
-                } else if (output.includes("Active: inactive") || output.includes("inactive (dead)")) {
-                    connected = false;
-                    available = true;
-                    errorMessage = "";
-                    ipAddress = "";
-                    connectionTime = "";
-                } else if (output.includes("Active: failed")) {
-                    connected = false;
-                    available = true;
-                    errorMessage = "VPN service failed";
-                    ipAddress = "";
-                    connectionTime = "";
-                } else if (output.includes("could not be found") || output.includes("not loaded")) {
-                    available = false;
-                    connected = false;
-                    errorMessage = "VPN service not found";
-                } else {
-                    // Service exists but in unknown state - still available
-                    available = true;
-                    connected = false;
-                    errorMessage = "";
-                }
-            }
-        }
-    }
-
-    Process {
-        id: connectProcess
-        command: ["systemctl", "start", root.serviceName]
-        running: false
-
-        onExited: {
-            connecting = false;
-            // Always check status after connect attempt
-            Qt.callLater(() => refreshStatus());
-        }
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.trim()) {
-                    errorMessage = "Failed to start VPN service";
-                    console.error("VPN connect failed:", text);
-                }
-            }
-        }
-    }
-
-    Process {
-        id: disconnectProcess
-        command: ["systemctl", "stop", root.serviceName]
-        running: false
-
-        onExited: {
-            connecting = false;
-            // Always check status after disconnect attempt
-            Qt.callLater(() => refreshStatus());
-        }
-
-        stderr: StdioCollector {
-            onStreamFinished: {
-                if (text.trim()) {
-                    errorMessage = "Failed to stop VPN service";
-                    console.error("VPN disconnect failed:", text);
-                }
-            }
-        }
-    }
-
-    Process {
-        id: ipProcess
-        command: ["curl", "-s", "--max-time", "3", "https://ifconfig.me"]
-        running: false
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                if (text.trim()) {
-                    ipAddress = text.trim();
-                }
-            }
-        }
-    }
-
-    Process {
-        id: timeProcess
-        command: ["systemctl", "show", root.serviceName, "--property=ActiveEnterTimestamp", "--value"]
-        running: false
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const timestamp = text.trim();
-                if (timestamp && timestamp !== "n/a") {
-                    connectionTime = timestamp;
-                }
-            }
-        }
-    }
-
-    Process {
-        id: scanProcess
-        command: ["systemctl", "list-unit-files", "--type=service"]
-        running: false
-
-        stdout: StdioCollector {
-            onStreamFinished: {
-                const output = text || "";
-                const lines = output.split('\n');
-                const vpnConnections = [];
-
-                for (const line of lines) {
-                    // Look for openvpn services
-                    if (line.includes('openvpn') && line.includes('.service')) {
-                        const serviceName = line.split(/\s+/)[0];
-                        // Extract connection name (remove openvpn- prefix and .service suffix)
-                        let connectionName = serviceName.replace(/^openvpn-/, '').replace(/\.service$/, '');
-                        if (connectionName === 'openvpn') connectionName = 'default';
-
-                        // Skip non-VPN services like restart
-                        if (connectionName === 'restart') continue;
-
-                        vpnConnections.push({
-                            serviceName: serviceName,
-                            connectionName: connectionName,
-                            displayName: connectionName.charAt(0).toUpperCase() + connectionName.slice(1)
-                        });
-                    }
-                }
-
-                connections = vpnConnections;
-            }
-        }
-    }
-
-    // Public methods
-    function connect() {
-        if (connecting || connected) return;
-
-        // Ensure we have a service to connect to
-        if (!serviceName && connections.length > 0) {
-            const firstConnection = connections[0];
-            serviceName = firstConnection.serviceName;
-            connectionName = firstConnection.connectionName;
-            activeConnection = firstConnection.serviceName;
-        }
-
-        if (!serviceName) {
-            errorMessage = "No VPN service configured";
-            return;
-        }
-
-        connecting = true;
-        errorMessage = "";
-        connectProcess.running = true;
-    }
-
-    function disconnect() {
-        if (connecting || !connected) return;
-
-        if (!serviceName) {
-            errorMessage = "No VPN service configured";
-            return;
-        }
-
-        connecting = true;
-        errorMessage = "";
-        disconnectProcess.running = true;
-    }
-
-    function toggle() {
-        if (connected) {
-            disconnect();
-        } else {
-            connect();
-        }
-    }
-
-    function refreshStatus() {
-        if (statusProcess.running) return;
-        statusProcess.running = true;
-    }
-
-    // Get additional connection information when connected
-    function getConnectionInfo() {
-        ipProcess.running = true;
-        timeProcess.running = true;
-    }
-
-    // Scan for available VPN connections
-    function scanConnections() {
-        if (scanProcess.running) return;
-        scanProcess.running = true;
-    }
-
-    // Connect to a specific VPN service
-    function connectToService(serviceName) {
-        if (connecting || connected) {
-            return;
-        }
-
-        // Update current service
-        root.serviceName = serviceName;
-
-        // Find the connection name from the list
-        const connection = connections.find(conn => conn.serviceName === serviceName);
-        if (connection) {
-            connectionName = connection.connectionName;
-            activeConnection = serviceName;
-        }
-
-        connect();
-    }
-
-    // Status icon name for display
     readonly property string statusIcon: {
-        if (!available) return "vpn_key_off";
-        if (connecting) return "sync";
-        if (connected) return "vpn_key";
+        if (!available)
+            return "vpn_key_off";
+        if (connecting)
+            return "sync";
+        if (connected)
+            return "vpn_key";
         return "vpn_key_off";
     }
 
-    // Status text for display
     readonly property string statusText: {
-        if (!available) return "Unavailable";
-        if (connecting) return "Connecting...";
-        if (connected) return "Connected";
+        if (!available)
+            return "Unavailable";
+        if (connecting)
+            return "Connecting...";
+        if (connected)
+            return "Connected";
         return "Disconnected";
+    }
+
+    function refreshStatus(): void {
+        refreshDebounce.restart();
+    }
+
+    function scanConnections(): void {
+        refreshDebounce.restart();
+    }
+
+    function connectToService(uuid: string): void {
+        if (root.pendingUuid !== "" || !uuid)
+            return;
+
+        root.errorMessage = "";
+        root.pendingUuid = uuid;
+        actionProc.command = ["nmcli", "connection", "up", "uuid", uuid];
+        actionProc.running = true;
+    }
+
+    function disconnectService(uuid: string): void {
+        if (root.pendingUuid !== "" || !uuid)
+            return;
+
+        root.errorMessage = "";
+        root.pendingUuid = uuid;
+        actionProc.command = ["nmcli", "connection", "down", "uuid", uuid];
+        actionProc.running = true;
+    }
+
+    function connect(): void {
+        if (root.connected)
+            return;
+
+        const target = root.connections[0];
+        if (!target) {
+            root.errorMessage = "No VPN connection configured";
+            return;
+        }
+        root.connectToService(target.uuid);
+    }
+
+    function disconnect(): void {
+        const target = root.activeConnections[0];
+        if (target)
+            root.disconnectService(target.uuid);
+    }
+
+    function toggle(): void {
+        if (root.connected)
+            root.disconnect();
+        else
+            root.connect();
+    }
+
+    // nmcli terse output escapes `:` and `\` inside field values
+    function splitTerse(line: string): var {
+        const fields = [];
+        let current = "";
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === "\\" && i + 1 < line.length)
+                current += line[++i];
+            else if (ch === ":") {
+                fields.push(current);
+                current = "";
+            } else
+                current += ch;
+        }
+        fields.push(current);
+        return fields;
+    }
+
+    onConnectedChanged: {
+        if (root.connected)
+            ipProc.running = true;
+        else
+            root.ipAddress = "";
+    }
+
+    Component.onCompleted: listProc.running = true
+
+    Timer {
+        id: refreshDebounce
+
+        interval: 300
+
+        onTriggered: {
+            listProc.running = false;
+            listProc.running = true;
+        }
+    }
+
+    Timer {
+        interval: 15000
+        repeat: true
+        running: true
+
+        onTriggered: root.refreshStatus()
+    }
+
+    Process {
+        id: listProc
+
+        command: ["nmcli", "-t", "-f", "UUID,TYPE,STATE,NAME", "connection", "show"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const found = [];
+                for (const line of (text || "").split("\n")) {
+                    if (!line)
+                        continue;
+
+                    const fields = root.splitTerse(line);
+                    if (fields.length < 4)
+                        continue;
+
+                    const [uuid, type, state, ...rest] = fields;
+                    if (!root.vpnTypes.includes(type))
+                        continue;
+
+                    const name = rest.join(":");
+                    found.push({
+                        uuid: uuid,
+                        serviceName: uuid,
+                        connectionName: name,
+                        displayName: name,
+                        type: type,
+                        active: state === "activated",
+                        activating: state === "activating"
+                    });
+                }
+                root.connections = found;
+            }
+        }
+    }
+
+    Process {
+        id: actionProc
+
+        onExited: exitCode => {
+            root.pendingUuid = "";
+            if (exitCode !== 0 && root.errorMessage === "")
+                root.errorMessage = "NetworkManager rejected the VPN request";
+            root.refreshStatus();
+        }
+
+        stderr: StdioCollector {
+            onStreamFinished: {
+                const message = (text || "").trim();
+                if (message) {
+                    root.errorMessage = message.split("\n").pop();
+                    console.warn("VPN:", message);
+                }
+            }
+        }
+    }
+
+    Process {
+        id: monitorProc
+
+        command: ["nmcli", "monitor"]
+        running: true
+
+        stdout: SplitParser {
+            onRead: root.refreshStatus()
+        }
+    }
+
+    Process {
+        id: ipProc
+
+        command: ["curl", "-s", "--max-time", "3", "https://ifconfig.me"]
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const address = (text || "").trim();
+                if (address)
+                    root.ipAddress = address;
+            }
+        }
     }
 }

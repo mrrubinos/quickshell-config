@@ -101,26 +101,23 @@ ColumnLayout {
             ListItem {
                 required property var modelData
 
-                readonly property bool isActive: VPN.serviceName === modelData.serviceName && VPN.connected
-                readonly property bool isConnecting: VPN.serviceName === modelData.serviceName && VPN.connecting
+                readonly property bool isActive: modelData.active
+                readonly property bool isConnecting: modelData.activating || VPN.pendingUuid === modelData.uuid
 
                 Layout.fillWidth: true
                 text: modelData.displayName
                 leftIcon: "vpn_key"
-                selected: VPN.serviceName === modelData.serviceName
+                selected: modelData.active
                 disabled: VPN.connecting
                 primaryActionActive: isActive
                 primaryActionLoading: isConnecting
                 primaryFontIcon: isActive ? "link_off" : "link"
 
                 onPrimaryActionClicked: {
-                    if (isActive) {
-                        // If this VPN is connected, disconnect it
-                        VPN.disconnect();
-                    } else {
-                        // Connect to this VPN
-                        VPN.connectToService(modelData.serviceName);
-                    }
+                    if (isActive)
+                        VPN.disconnectService(modelData.uuid);
+                    else
+                        VPN.connectToService(modelData.uuid);
                 }
             }
         }
