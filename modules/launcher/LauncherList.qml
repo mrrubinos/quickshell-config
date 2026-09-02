@@ -193,49 +193,24 @@ ListView {
             }
         }
     ]
-    transitions: Transition {
-        SequentialAnimation {
-            ParallelAnimation {
-                BasicNumberAnimation {
-                    duration: Foundations.duration.fast
-                    from: 1
-                    property: "opacity"
-                    target: root
-                    to: 0
-                }
-                BasicNumberAnimation {
-                    duration: Foundations.duration.fast
-                    from: 1
-                    property: "scale"
-                    target: root
-                    to: 0.9
-                }
-            }
-            PropertyAction {
-                properties: "values,delegate"
-                targets: [model, root]
-            }
-            ParallelAnimation {
-                BasicNumberAnimation {
-                    duration: Foundations.duration.fast
-                    from: 0
-                    property: "opacity"
-                    target: root
-                    to: 1
-                }
-                BasicNumberAnimation {
-                    duration: Foundations.duration.fast
-                    from: 0.9
-                    property: "scale"
-                    target: root
-                    to: 1
-                }
-            }
-            PropertyAction {
-                property: "enabled"
-                target: root
-                value: true
-            }
+    onStateChanged: stateSwap.restart()
+
+    ParallelAnimation {
+        id: stateSwap
+
+        BasicNumberAnimation {
+            duration: Foundations.duration.fast
+            from: 0
+            property: "opacity"
+            target: root
+            to: 1
+        }
+        BasicNumberAnimation {
+            duration: Foundations.duration.fast
+            from: 0.9
+            property: "scale"
+            target: root
+            to: 1
         }
     }
 
