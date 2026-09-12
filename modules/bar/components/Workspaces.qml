@@ -65,9 +65,8 @@ Item {
         updateWorkspaceFocus();
     }
 
-    anchors.centerIn: parent
-    height: 30
-    width: {
+    implicitHeight: 30
+    implicitWidth: {
         let total = 0;
         for (let i = 0; i < workspaces.count; i++) {
             const ws = workspaces.get(i);
@@ -144,8 +143,6 @@ Item {
 
         anchors.centerIn: parent
         spacing: spacingBetweenPills
-        width: root.width - horizontalPadding * 2
-        x: horizontalPadding
 
         Repeater {
             model: root.workspaces
