@@ -155,6 +155,8 @@ Item {
                 color: {
                     if (model.isFocused)
                         return activeColor;
+                    if (model.isUrgent)
+                        return Foundations.palette.base08;
                     if (isHovered)
                         return Qt.lighter(Foundations.palette.base04, 1.3);
                     if (model.occupied)
@@ -190,6 +192,30 @@ Item {
                     NumberAnimation {
                         duration: Foundations.duration.standard
                         easing.type: Easing.OutBack
+                    }
+                }
+
+                SequentialAnimation {
+                    id: urgentPulse
+
+                    loops: Animation.Infinite
+                    running: model.isUrgent && !model.isFocused
+
+                    onStopped: workspacePill.opacity = 1.0
+
+                    NumberAnimation {
+                        duration: Foundations.duration.slow
+                        easing.type: Easing.InOutQuad
+                        property: "opacity"
+                        target: workspacePill
+                        to: 0.35
+                    }
+                    NumberAnimation {
+                        duration: Foundations.duration.slow
+                        easing.type: Easing.InOutQuad
+                        property: "opacity"
+                        target: workspacePill
+                        to: 1.0
                     }
                 }
 
