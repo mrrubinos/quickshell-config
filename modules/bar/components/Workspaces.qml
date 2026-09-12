@@ -14,6 +14,10 @@ Item {
     property bool hovered: false
     property bool isDestroying: false
     property real masterProgress: 0.0
+    readonly property int pillActiveWidth: 28
+    readonly property int pillFocusedWidth: 44
+    readonly property int pillHeight: 12
+    readonly property int pillIdleWidth: 16
     required property var screen
     property int spacingBetweenPills: 8
     property ListModel workspaces: ListModel {
@@ -68,11 +72,11 @@ Item {
         for (let i = 0; i < workspaces.count; i++) {
             const ws = workspaces.get(i);
             if (ws.isFocused)
-                total += 44;
+                total += root.pillFocusedWidth;
             else if (ws.isActive)
-                total += 28;
+                total += root.pillActiveWidth;
             else
-                total += 16;
+                total += root.pillIdleWidth;
         }
         total += Math.max(workspaces.count - 1, 0) * spacingBetweenPills;
         total += horizontalPadding * 2;
@@ -160,16 +164,16 @@ Item {
                         return Qt.lighter(Foundations.palette.base04, 1.15);
                     return Foundations.palette.base04;
                 }
-                height: 12
-                radius: 6
+                height: root.pillHeight
+                radius: root.pillHeight / 2
                 scale: model.isFocused ? 1.0 : (isHovered ? 0.95 : 0.9)
                 width: {
                     if (model.isFocused)
-                        return 44;
+                        return root.pillFocusedWidth;
                     else if (model.isActive)
-                        return 28;
+                        return root.pillActiveWidth;
                     else
-                        return 16;
+                        return root.pillIdleWidth;
                 }
                 z: 0
 
