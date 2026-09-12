@@ -278,12 +278,18 @@ Item {
                 MouseArea {
                     id: pillMouseArea
 
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
                     anchors.fill: parent
                     anchors.margins: -4
                     hoverEnabled: true
                     cursorShape: model.isFocused ? Qt.ArrowCursor : Qt.PointingHandCursor
 
-                    onClicked: {
+                    onClicked: mouse => {
+                        if (mouse.button === Qt.RightButton) {
+                            Mango.moveFocusedToWorkspace(model.id);
+                            moveFlashAnimation.restart();
+                            return;
+                        }
                         if (!model.isFocused) {
                             Mango.focusWorkspace(model.id);
                         }
@@ -304,6 +310,28 @@ Item {
                     visible: root.effectsActive && model.isFocused
                     width: parent.width + 18 * root.masterProgress
                     z: 1
+                }
+
+                // One-shot flash marking the pill a window was sent to
+                Rectangle {
+                    id: moveFlash
+
+                    anchors.fill: parent
+                    color: Foundations.palette.base0D
+                    opacity: 0
+                    radius: parent.radius
+                    z: 2
+
+                    NumberAnimation {
+                        id: moveFlashAnimation
+
+                        duration: Foundations.duration.standard
+                        easing.type: Easing.OutCubic
+                        from: 0.85
+                        property: "opacity"
+                        target: moveFlash
+                        to: 0
+                    }
                 }
             }
         }

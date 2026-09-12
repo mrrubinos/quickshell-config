@@ -66,6 +66,13 @@ Singleton {
         focusWorkspaceProcess.running = true;
     }
 
+    // Function to send the focused window to a tag by number (1-9)
+    function moveFocusedToWorkspace(workspaceId: int): void {
+        moveToWorkspaceProcess.command = ["mmsg", "dispatch", "tag," + workspaceId.toString() + ",0"];
+        moveToWorkspaceProcess.running = false;
+        moveToWorkspaceProcess.running = true;
+    }
+
     // Every monitor always exposes mango's nine compiled-in tags; tagCount
     // must match the tags bound in the mango config. A tag is "active" when
     // viewed on its monitor and "focused" when also on the focused monitor.
@@ -193,6 +200,13 @@ Singleton {
     // Process for focusing workspace
     Process {
         id: focusWorkspaceProcess
+
+        running: false
+    }
+
+    // Process for moving the focused window to a workspace
+    Process {
+        id: moveToWorkspaceProcess
 
         running: false
     }
