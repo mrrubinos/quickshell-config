@@ -32,10 +32,8 @@ Item {
         for (let i = 0; i < workspaces.count; i++) {
             const ws = workspaces.get(i);
             const isFocused = ws.id === focusedId;
-            const isActive = isFocused;
-            if (ws.isFocused !== isFocused || ws.isActive !== isActive) {
+            if (ws.isFocused !== isFocused) {
                 workspaces.setProperty(i, "isFocused", isFocused);
-                workspaces.setProperty(i, "isActive", isActive);
                 if (isFocused) {
                     root.triggerUnifiedWave();
                     root.workspaceChanged(ws.id, root.activeColor);
@@ -45,22 +43,20 @@ Item {
     }
     function updateWorkspaceList() {
         const newList = Mango.workspaces || [];
-        workspaces.clear();
-        for (let i = 0; i < newList.length; i++) {
-            const ws = newList[i];
-            // Only show tags for this screen/monitor
-            if (ws.output === root.screen.name) {
-                workspaces.append({
-                    id: ws.id,
-                    idx: ws.idx,
-                    name: ws.name || "",
-                    output: ws.output,
-                    isActive: ws.is_active,
-                    isFocused: ws.is_focused,
-                    isUrgent: ws.is_urgent,
-                    occupied: ws.occupied === true
-                });
-            }
+        for (let i = 0; i < workspaces.count; i++) {
+            const ws = workspaces.get(i);
+            if (ws.output !== root.screen.name)
+                continue;
+            const src = newList.find(w => w.output === root.screen.name && w.id === ws.id);
+            const occupied = src ? src.occupied === true : false;
+            const isUrgent = src ? src.is_urgent === true : false;
+            const isActive = src ? src.is_active === true : false;
+            if (ws.occupied !== occupied)
+                workspaces.setProperty(i, "occupied", occupied);
+            if (ws.isUrgent !== isUrgent)
+                workspaces.setProperty(i, "isUrgent", isUrgent);
+            if (ws.isActive !== isActive)
+                workspaces.setProperty(i, "isActive", isActive);
         }
         updateWorkspaceFocus();
     }
@@ -83,7 +79,21 @@ Item {
         return total;
     }
 
-    Component.onCompleted: updateWorkspaceList()
+    Component.onCompleted: {
+        for (let i = 0; i < Mango.tagCount; i++) {
+            workspaces.append({
+                id: i + 1,
+                idx: i,
+                name: "",
+                output: root.screen.name,
+                isActive: false,
+                isFocused: false,
+                isUrgent: false,
+                occupied: false
+            });
+        }
+        updateWorkspaceList();
+    }
     Component.onDestruction: {
         root.isDestroying = true;
     }
