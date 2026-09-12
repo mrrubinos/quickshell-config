@@ -19,12 +19,46 @@ Item {
     readonly property int pillHeight: 12
     readonly property int pillIdleWidth: 16
     required property var screen
+    property real scrollAccumulated: 0
+    property int scrollPendingSteps: 0
+    property int scrollTargetIndex: -1
     property int spacingBetweenPills: 8
     property ListModel workspaces: ListModel {
     }
 
     signal workspaceChanged(int workspaceId, color accentColor)
 
+    function focusedPillIndex(): int {
+        let active = -1;
+        for (let i = 0; i < workspaces.count; i++) {
+            const ws = workspaces.get(i);
+            if (ws.isFocused)
+                return i;
+            if (active < 0 && ws.isActive)
+                active = i;
+        }
+        return active;
+    }
+    function stepScroll() {
+        if (root.scrollPendingSteps === 0) {
+            root.scrollTargetIndex = -1;
+            return;
+        }
+        const step = root.scrollPendingSteps > 0 ? 1 : -1;
+        root.scrollPendingSteps -= step;
+        // The model lags behind mmsg, so a queued burst walks from the last
+        // requested index instead of the one the pills still show
+        const current = root.scrollTargetIndex >= 0 ? root.scrollTargetIndex : root.focusedPillIndex();
+        const target = current - step;
+        if (current < 0 || target < 0 || target >= workspaces.count) {
+            root.scrollPendingSteps = 0;
+            root.scrollAccumulated = 0;
+            return;
+        }
+        root.scrollTargetIndex = target;
+        Mango.focusWorkspace(workspaces.get(target).id);
+        scrollGuard.restart();
+    }
     function triggerUnifiedWave() {
         masterAnimation.restart();
     }
@@ -138,11 +172,33 @@ Item {
             value: 0.0
         }
     }
+    Timer {
+        id: scrollGuard
+
+        interval: 80
+
+        onTriggered: root.stepScroll()
+    }
     Row {
         id: pillRow
 
         anchors.centerIn: parent
         spacing: spacingBetweenPills
+
+        WheelHandler {
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+
+            onWheel: event => {
+                root.scrollAccumulated += event.angleDelta.y;
+                const steps = Math.trunc(root.scrollAccumulated / 120);
+                if (steps === 0)
+                    return;
+                root.scrollAccumulated -= steps * 120;
+                root.scrollPendingSteps += steps;
+                if (!scrollGuard.running)
+                    root.stepScroll();
+            }
+        }
 
         Repeater {
             model: root.workspaces
