@@ -12,6 +12,7 @@ Singleton {
     property alias interactiveCommands: interactiveCommandsAdapter.commands
     property alias excludedDesktops: excludedDesktopsAdapter.excludedApps
     property alias emojis: emojisAdapter.emojis
+    property alias binds: bindsAdapter.binds
 
     property FileView commandsFile: FileView {
         path: `${Quickshell.shellDir}/commands.json`
@@ -66,6 +67,19 @@ Singleton {
             id: emojisAdapter
 
             property var emojis: []
+        }
+    }
+
+    property FileView bindsFile: FileView {
+        path: `${Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config"}/mango/binds.json`
+        watchChanges: true
+
+        onFileChanged: reload()
+
+        JsonAdapter {
+            id: bindsAdapter
+
+            property var binds: []
         }
     }
 }

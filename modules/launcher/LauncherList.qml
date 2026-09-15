@@ -36,6 +36,11 @@ ListView {
         prefix: "?"
     }
 
+    property LauncherServices.Binds bindsLauncher: LauncherServices.Binds {
+        prefix: "/"
+        bindList: ConfigsJson.binds
+    }
+
     required property string searchText
     required property PersistentProperties visibilities
 
@@ -62,6 +67,7 @@ ListView {
         const sessionCommandsPrefix = "#";
         const emojisPrefix = ":";
         const passPrefix = "?";
+        const bindsPrefix = "/";
 
         if (text.startsWith(actionsPrefix)) {
             const interactiveCommands = ConfigsJson.interactiveCommands;
@@ -89,6 +95,10 @@ ListView {
 
         if (text.startsWith(passPrefix)) {
             return "pass";
+        }
+
+        if (text.startsWith(bindsPrefix)) {
+            return "binds";
         }
 
         return "apps";
@@ -181,6 +191,14 @@ ListView {
 
             PropertyChanges {
                 model.values: root.passLauncher.search(root.searchText)
+                root.delegate: actionItem
+            }
+        },
+        State {
+            name: "binds"
+
+            PropertyChanges {
+                model.values: root.bindsLauncher.search(root.searchText)
                 root.delegate: actionItem
             }
         },

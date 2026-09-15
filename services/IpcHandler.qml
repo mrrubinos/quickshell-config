@@ -27,6 +27,24 @@ Scope {
         target: "drawers"
     }
 
+    IpcHandler {
+        function open(text: string): void {
+            const visibilities = Visibilities.getForActive();
+            visibilities.searchText = text;
+            visibilities.launcher = true;
+        }
+        function toggle(text: string): void {
+            const visibilities = Visibilities.getForActive();
+            if (visibilities.launcher) {
+                visibilities.launcher = false;
+            } else {
+                open(text);
+            }
+        }
+
+        target: "launcher"
+    }
+
     // Notification controls
     IpcHandler {
         function dismiss(id: string): string {

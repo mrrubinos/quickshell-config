@@ -80,7 +80,7 @@ Item {
             borderWidth: 0
             bottomPadding: Foundations.spacing.xs
             opacity: root.isExpanded ? 1 : 0
-            placeholderText: "Type >:?!# for commands/emojis(2+ chars)/pass/shell/session"
+            placeholderText: "Type >:?!#/ for commands/emojis(2+ chars)/pass/shell/session/binds"
             topPadding: Foundations.spacing.xs
             visible: root.isExpanded
 
