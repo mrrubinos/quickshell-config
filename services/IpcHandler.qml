@@ -127,6 +127,18 @@ Scope {
         target: "vpn"
     }
 
+    IpcHandler {
+        function toggle(): string {
+            IdleInhibitor.enabled = !IdleInhibitor.enabled;
+            return IdleInhibitor.enabled ? "enabled" : "disabled";
+        }
+        function status(): string {
+            return IdleInhibitor.enabled ? "enabled" : "disabled";
+        }
+
+        target: "idleInhibitor"
+    }
+
     // Workspace controls
     IpcHandler {
         function focus(id: string): string {
