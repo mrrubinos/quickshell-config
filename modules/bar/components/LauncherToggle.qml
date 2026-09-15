@@ -80,7 +80,7 @@ Item {
             borderWidth: 0
             bottomPadding: Foundations.spacing.xs
             opacity: root.isExpanded ? 1 : 0
-            placeholderText: "Type >:?!#/ for commands/emojis(2+ chars)/pass/shell/session/binds"
+            placeholderText: "Type > commands, ! clipboard, : emojis (2+ chars), ? pass, # session, / binds"
             topPadding: Foundations.spacing.xs
             visible: root.isExpanded
 
@@ -100,6 +100,12 @@ Item {
                     const currentItem = list?.currentItem;
                     if (currentItem && currentItem.hintButton) {
                         currentItem.hintButton.clicked();
+                        event.accepted = true;
+                    }
+                } else if (event.key === Qt.Key_Delete && (event.modifiers & Qt.ShiftModifier)) {
+                    const onDelete = root.visibilities.launcherList?.currentItem?.modelData?.onDelete;
+                    if (onDelete) {
+                        onDelete();
                         event.accepted = true;
                     }
                 }

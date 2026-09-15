@@ -3,9 +3,12 @@ import qs.services
 import Quickshell
 import Quickshell.Io
 import Quickshell.Bluetooth
+import QtQuick
 
 Scope {
     id: root
+
+    property PersistentProperties chooserVisibilities: null
 
     // Drawer visibility controls
     IpcHandler {
@@ -28,6 +31,11 @@ Scope {
     }
 
     IpcHandler {
+        function choose(fifo: string, options: string): void {
+            SourceChooser.request(fifo, options);
+            root.chooserVisibilities = Visibilities.getForActive();
+            open("%");
+        }
         function open(text: string): void {
             const visibilities = Visibilities.getForActive();
             visibilities.searchText = text;
@@ -43,6 +51,17 @@ Scope {
         }
 
         target: "launcher"
+    }
+
+    Connections {
+        function onLauncherChanged(): void {
+            if (!root.chooserVisibilities.launcher) {
+                SourceChooser.answer("");
+                root.chooserVisibilities = null;
+            }
+        }
+
+        target: root.chooserVisibilities
     }
 
     // Notification controls

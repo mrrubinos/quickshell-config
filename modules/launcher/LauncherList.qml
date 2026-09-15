@@ -12,11 +12,14 @@ import QtQuick.Controls
 ListView {
     id: root
     
-    property LauncherServices.CommandLauncher commandsLauncher: LauncherServices.CommandLauncher {
-        commandPrefix: "!"
-        commandList: ConfigsJson.commands
+    property LauncherServices.Clipboard clipboardLauncher: LauncherServices.Clipboard {
+        prefix: "!"
     }
-    
+
+    property LauncherServices.Chooser chooserLauncher: LauncherServices.Chooser {
+        prefix: "%"
+    }
+
     property LauncherServices.CommandLauncher sessionCommandsLauncher: LauncherServices.CommandLauncher {
         commandPrefix: "#"
         commandList: ConfigsJson.sessionCommands
@@ -24,7 +27,8 @@ ListView {
 
     property LauncherServices.Actions actionsLauncher: LauncherServices.Actions {
         prefix: ">"
-        commandList: ConfigsJson.interactiveCommands
+        commandList: ConfigsJson.commands
+        interactiveCommandList: ConfigsJson.interactiveCommands
     }
 
     property LauncherServices.Emojis emojisLauncher: LauncherServices.Emojis {
@@ -63,7 +67,8 @@ ListView {
     state: {
         const text = searchText;
         const actionsPrefix = ">";
-        const commandsPrefix = "!";
+        const clipboardPrefix = "!";
+        const chooserPrefix = "%";
         const sessionCommandsPrefix = "#";
         const emojisPrefix = ":";
         const passPrefix = "?";
@@ -81,8 +86,12 @@ ListView {
             return "actions";
         }
 
-        if (text.startsWith(commandsPrefix)) {
-            return "commands";
+        if (text.startsWith(clipboardPrefix)) {
+            return "clipboard";
+        }
+
+        if (text.startsWith(chooserPrefix)) {
+            return "chooser";
         }
 
         if (text.startsWith(sessionCommandsPrefix)) {
@@ -163,10 +172,18 @@ ListView {
             }
         },
         State {
-            name: "commands"
+            name: "clipboard"
 
             PropertyChanges {
-                model.values: root.commandsLauncher.search(root.searchText)
+                model.values: root.clipboardLauncher.search(root.searchText)
+                root.delegate: actionItem
+            }
+        },
+        State {
+            name: "chooser"
+
+            PropertyChanges {
+                model.values: root.chooserLauncher.search(root.searchText)
                 root.delegate: actionItem
             }
         },
@@ -211,7 +228,12 @@ ListView {
             }
         }
     ]
-    onStateChanged: stateSwap.restart()
+    onStateChanged: {
+        if (state === "clipboard") {
+            clipboardLauncher.reload();
+        }
+        stateSwap.restart();
+    }
 
     ParallelAnimation {
         id: stateSwap

@@ -211,6 +211,13 @@
                 makeWrapper ${quickshellPkg}/bin/quickshell $out/bin/quickshell-config \
                   --add-flags "--config qsc" \
                   --prefix QML2_IMPORT_PATH : "${quickshellPkg}/lib/qt-6/qml" \
+                  --prefix PATH : "${
+                    pkgs.lib.makeBinPath [
+                      pkgs.cliphist
+                      pkgs.wl-clipboard
+                      pkgs.wtype
+                    ]
+                  }" \
                   --prefix XDG_DATA_DIRS : "$out/share:${pkgs.material-symbols}/share" \
                   --prefix XDG_CONFIG_DIRS : "$out/etc/xdg"
 
