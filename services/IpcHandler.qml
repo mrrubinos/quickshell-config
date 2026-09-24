@@ -131,6 +131,22 @@ Scope {
 
     // Bluetooth controls
     IpcHandler {
+        function profile(address: string, key: string): string {
+            const card = BluetoothAudio.cardFor(address);
+            if (!card) return "no audio card for " + address;
+            if (!card.profiles.some(p => p.key === key)) return "unavailable profile: " + key;
+            BluetoothAudio.setProfile(address, key);
+            return key;
+        }
+        function profiles(): string {
+            return BluetoothAudio.cards.map(c => `${c.address}: ${c.activeProfile} [${c.profiles.map(p => p.key).join(", ")}]`).join("\n");
+        }
+        function toggleProfile(address: string): string {
+            const target = address || BluetoothAudio.cards[0]?.address;
+            if (!target) return "no audio device";
+            const next = BluetoothAudio.toggle(target);
+            return next ? `${target}: ${next}` : "no alternative profile";
+        }
         function toggle(): string {
             if (Bluetooth.defaultAdapter) {
                 Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter.enabled;

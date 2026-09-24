@@ -216,6 +216,7 @@
                       pkgs.cliphist
                       pkgs.wl-clipboard
                       pkgs.wtype
+                      pkgs.pulseaudio
                     ]
                   }" \
                   --prefix XDG_DATA_DIRS : "$out/share:${pkgs.material-symbols}/share" \

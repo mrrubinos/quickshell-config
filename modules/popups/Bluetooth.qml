@@ -10,6 +10,7 @@ import Quickshell
 import Quickshell.Bluetooth
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 ColumnLayout {
     id: root
@@ -65,24 +66,50 @@ ColumnLayout {
             values: [...Bluetooth.devices.values].sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired)).slice(0, 5)
         }
 
-        Lists.ListItem {
+        ColumnLayout {
+            id: device
+
+            readonly property var card: Services.BluetoothAudio.cardFor(modelData.address)
             readonly property bool loading: modelData.state === BluetoothDeviceState.Connecting || modelData.state === BluetoothDeviceState.Disconnecting
             required property BluetoothDevice modelData
 
-            leftIcon: Services.IconsService.getBluetoothIcon(modelData.icon)
-            primaryActionActive: modelData.connected
-            primaryActionLoading: loading
-            primaryFontIcon: modelData.connected ? "link_off" : "link"
-            secondaryActionActive: !modelData.bonded
-            secondaryFontIcon: modelData.bonded ? "delete" : ""
-            selected: modelData.connected
-            text: modelData.name
+            Layout.fillWidth: true
+            spacing: 0
 
-            onPrimaryActionClicked: {
-                modelData.connected = !modelData.connected;
+            Lists.ListItem {
+                leftIcon: Services.IconsService.getBluetoothIcon(device.modelData.icon)
+                primaryActionActive: device.modelData.connected
+                primaryActionLoading: device.loading
+                primaryFontIcon: device.modelData.connected ? "link_off" : "link"
+                secondaryActionActive: !device.modelData.bonded
+                secondaryFontIcon: device.modelData.bonded ? "delete" : ""
+                selected: device.modelData.connected
+                text: device.modelData.name
+
+                onPrimaryActionClicked: {
+                    device.modelData.connected = !device.modelData.connected;
+                }
+                onSecondaryActionClicked: {
+                    device.modelData.forget();
+                }
             }
-            onSecondaryActionClicked: {
-                modelData.forget();
+            ButtonGroup {
+                id: profiles
+
+            }
+            Repeater {
+                model: device.modelData.connected ? (device.card?.profiles ?? []) : []
+
+                Lists.ListItem {
+                    required property var modelData
+
+                    Layout.leftMargin: Foundations.spacing.m
+                    buttonGroup: profiles
+                    selected: device.card?.activeProfile === modelData.key
+                    text: modelData.description
+
+                    onClicked: Services.BluetoothAudio.setProfile(device.modelData.address, modelData.key)
+                }
             }
         }
     }
