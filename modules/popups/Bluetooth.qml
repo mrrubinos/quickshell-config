@@ -77,7 +77,7 @@ ColumnLayout {
             spacing: 0
 
             Lists.ListItem {
-                leftIcon: Services.IconsService.getBluetoothIcon(device.modelData.icon)
+                leftIcon: Services.BluetoothAudio.profileIcon(device.modelData.address) || Services.IconsService.getBluetoothIcon(device.modelData.icon)
                 primaryActionActive: device.modelData.connected
                 primaryActionLoading: device.loading
                 primaryFontIcon: device.modelData.connected ? "link_off" : "link"

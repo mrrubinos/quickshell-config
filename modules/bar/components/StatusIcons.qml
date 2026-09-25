@@ -228,7 +228,7 @@ Rectangle {
 
                         animate: true
                         color: root.colour
-                        text: Services.IconsService.getBluetoothIcon(modelData.icon)
+                        text: Services.BluetoothAudio.profileIcon(modelData.address) || Services.IconsService.getBluetoothIcon(modelData.icon)
 
                         SequentialAnimation on opacity {
                             alwaysRunToEnd: true

@@ -21,6 +21,14 @@ Singleton {
     function isCodecVariant(key: string, keys: var): bool {
         return keys.some(k => k !== key && key.startsWith(k + "-"));
     }
+    function profileIcon(address: string): string {
+        const profile = cardFor(address)?.activeProfile ?? "";
+        if (isHandsFree(profile))
+            return "headset_mic";
+        if (isHighFidelity(profile))
+            return "headphones";
+        return "";
+    }
     function parseCards(text: string): var {
         return JSON.parse(text).filter(c => c.name.startsWith("bluez_card.")).map(c => {
             const keys = Object.keys(c.profiles);
